@@ -26,6 +26,10 @@ using System.Collections;
 using System.Threading;
 using TUIO;
 using System.Linq;
+using System.Diagnostics;
+using System.Net.Sockets;
+using System.Net;
+using System.Text;
 
 public class TuioDemo : Form, TuioListener
 {
@@ -53,8 +57,11 @@ public class TuioDemo : Form, TuioListener
     private string choiceFour = "Aswan";
     private string responseMessage = "";
 
+    private static List<string> questions = new List<string>();
+    private static List<string> imagePaths = new List<string>();
+    private static List<string> answers = new List<string>();  
 
-	Font font = new Font("Arial", 10.0f);
+    Font font = new Font("Arial", 10.0f);
 	SolidBrush fntBrush = new SolidBrush(Color.White);
 	SolidBrush bgrBrush = new SolidBrush(Color.Purple);
 	SolidBrush curBrush = new SolidBrush(Color.FromArgb(192, 0, 192));
@@ -159,20 +166,21 @@ public class TuioDemo : Form, TuioListener
                 responseMessage = "Stubiddd";
                 welcomeScreen = false;
             }*/
-            if (objectList.Values.Any(obj => obj.SymbolID == 1) &&
-				objectList.Values.Any(obj => obj.SymbolID == 4) &&
-				objectList.Values.Any(obj => obj.SymbolID == 1 && obj.Angle >= 5.23599 && obj.Angle <= 6.10865))  // Range: 300 to 350 degrees (in radians)
-            {
+           
+    //        if (objectList.Values.Any(obj => obj.SymbolID == 1) &&
+				//objectList.Values.Any(obj => obj.SymbolID == 4) &&
+				//objectList.Values.Any(obj => obj.SymbolID == 1 && obj.Angle >= 5.23599 && obj.Angle <= 6.10865))  // Range: 300 to 350 degrees (in radians)
+    //        {
                 
-                responseMessage = "Ashter katkout";
-                welcomeScreen = false;
-            }
-            else if (objectList.Values.Any(obj => obj.SymbolID == 4) &&
-                    !objectList.Values.Any(obj => obj.SymbolID == 1 && obj.Angle >= 5.23599 && obj.Angle <= 6.10865))
-            {
-                responseMessage = "Stubiddd";
-                welcomeScreen = false;
-            }
+    //            responseMessage = "Ashter katkout";
+    //            welcomeScreen = false;
+    //        }
+    //        else if (objectList.Values.Any(obj => obj.SymbolID == 4) &&
+    //                !objectList.Values.Any(obj => obj.SymbolID == 1 && obj.Angle >= 5.23599 && obj.Angle <= 6.10865))
+    //        {
+    //            responseMessage = "Stubiddd";
+    //            welcomeScreen = false;
+    //        }
         }
 	}
 
@@ -241,8 +249,8 @@ public class TuioDemo : Form, TuioListener
     {
         // Calculate the arrow points based on the angle
         float arrowLength = size;
-        float arrowHeadLength = size / 2;
-        float arrowHeadWidth = size / 3;
+        float arrowHeadLength = size / 5;
+        float arrowHeadWidth = size / 8;
 
         // Calculate arrow base points
         float x1 = x + arrowLength * (float)Math.Cos(angle);
@@ -254,12 +262,13 @@ public class TuioDemo : Form, TuioListener
         float x3 = x1 - arrowHeadLength * (float)Math.Cos(angle + Math.PI / 6);
         float y3 = y1 - arrowHeadLength * (float)Math.Sin(angle + Math.PI / 6);
 
+        Pen thickPen = new Pen(Color.Black, 5);
         // Draw the arrow line
-        g.DrawLine(Pens.Black, x, y, x1, y1);
+        g.DrawLine(thickPen, x, y, x1, y1);
 
         // Draw the arrowhead
-        g.DrawLine(Pens.Black, x1, y1, x2, y2);
-        g.DrawLine(Pens.Black, x1, y1, x3, y3);
+        g.DrawLine(thickPen, x1, y1, x2, y2);
+        g.DrawLine(thickPen, x1, y1, x3, y3);
     }
 
     protected override void OnPaintBackground(PaintEventArgs pevent)
@@ -334,6 +343,7 @@ public class TuioDemo : Form, TuioListener
         }*/
         Graphics g = pevent.Graphics;
         g.FillRectangle(bgrBrush, new Rectangle(0, 0, width, height));
+        changeQuestionBackground(pevent);
         SolidBrush c1Brush = new SolidBrush(Color.Red);
         SolidBrush c2Brush = new SolidBrush(Color.Green);
         SolidBrush c3Brush = new SolidBrush(Color.Blue);
@@ -341,18 +351,6 @@ public class TuioDemo : Form, TuioListener
 
         if (welcomeScreen)
         {
-			// Display the welcome screen message
-			g.FillEllipse(c1Brush, 5, 5, 40, 25);
-            g.FillEllipse(c2Brush, width - g.MeasureString(choiceTwo, font).Width - 10, 5, 40, 25);
-            g.FillEllipse(c3Brush, 5, height - g.MeasureString(choiceThree, font).Height - 10, 40, 25);
-            g.FillEllipse(c4Brush, width - g.MeasureString(choiceFour, font).Width - 10, height - g.MeasureString(choiceFour, font).Height - 10, 40, 25);
-            g.DrawString(Question, font, fntBrush, new PointF((width - g.MeasureString(Question, font).Width) / 2, (height - g.MeasureString(Question, font).Height) / 2));
-            g.DrawString(choiceOne, font, fntBrush, new PointF(10, 10));
-            g.DrawString(choiceTwo, font, fntBrush, new PointF(width - g.MeasureString(choiceTwo, font).Width - 10, 10));
-            g.DrawString(choiceThree, font, fntBrush, new PointF(10, height - g.MeasureString(choiceThree, font).Height - 10));
-            g.DrawString(choiceFour, font, fntBrush, new PointF(width - g.MeasureString(choiceFour, font).Width - 10, height - g.MeasureString(choiceFour, font).Height - 10));
-
-            // Check if the object with SymbolID == 1 exists in objectList
             var tuioObject = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
 
             if (tuioObject != null)
@@ -361,7 +359,7 @@ public class TuioDemo : Form, TuioListener
                 float rotationAngleDegrees = (float)(tuioObject.Angle * (180.0 / Math.PI));
 
                 // Draw the angle text on the screen
-                g.DrawString("Angle: " + rotationAngleDegrees.ToString("0.0") + "°", font, fntBrush, new PointF(width / 2 - 100, height / 2-200));
+                g.DrawString("Angle: " + rotationAngleDegrees.ToString("0.0") + "°", font, fntBrush, new PointF(width / 2 - 100, height / 2 - 200));
             }
             if (objectList.Count > 0)
             {
@@ -378,11 +376,39 @@ public class TuioDemo : Form, TuioListener
                             float angle = tobj.Angle; // Angle in radians
 
                             // Draw the arrow at the object's position
-                            DrawArrow(pevent.Graphics, ox, oy, angle, 50); // Adjust size as needed
+                            DrawArrow(pevent.Graphics, window_width / 2, window_height / 2, angle, 250); // Adjust size as needed
                         }
                     }
                 }
             }
+
+
+            // Draw the main "wheel" (central question)
+            g.FillEllipse(c1Brush, width / 2 - 100, height / 2 - 50, 200, 100); // Central circle for the question
+            if(questions.Count > 0)
+            {
+                g.DrawString(questions[0], font, fntBrush, new PointF((width - g.MeasureString(questions[0], font).Width) / 2, (height - g.MeasureString(questions[0], font).Height) / 2));
+            }
+
+            // Draw the four "choices" like wheel segments
+            g.FillEllipse(c1Brush, 20, 20, 100, 60);  // Top-left
+            g.FillEllipse(c2Brush, width - 120, 20, 100, 60);  // Top-right
+            g.FillEllipse(c3Brush, 20, height - 80, 100, 60);  // Bottom-left
+            g.FillEllipse(c4Brush, width - 120, height - 80, 100, 60);  // Bottom-right
+
+            // Draw the text on the ellipses for choices
+            if (answers.Count > 0)
+            {
+                g.DrawString(answers[0], font, fntBrush, new PointF(40, 40));  // Position for first choice
+                g.DrawString(answers[1], font, fntBrush, new PointF(width - g.MeasureString(answers[1], font).Width - 40, 40));  // Second choice
+                g.DrawString(answers[2], font, fntBrush, new PointF(40, height - g.MeasureString(answers[2], font).Height - 40));  // Third choice
+                g.DrawString(answers[3], font, fntBrush, new PointF(width - g.MeasureString(answers[3], font).Width - 40, height - g.MeasureString(choiceFour, font).Height - 40));  // Fourth choice
+            }
+
+            checkCollisonTrue();
+
+            // Check if the object with SymbolID == 1 exists in objectList
+            
         }
         else
         {
@@ -392,8 +418,132 @@ public class TuioDemo : Form, TuioListener
 
     }
 
-		public static void Main(String[] argv) {
-	 		int port = 0;
+    private void changeQuestionBackground(PaintEventArgs pevent)
+    {
+        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
+        Graphics g = pevent.Graphics;
+
+        if (marker1 != null)
+        {
+            // Check if marker1's angle is within the range 5.23599 to 6.10865
+            if (marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865)
+            {
+                
+                // Trigger background change or other actions
+                g.DrawImage(Image.FromFile("cairo.png"), 0, 0, width, height);
+            }
+            else
+            {
+                
+                // Optionally trigger different background or other actions
+               // changeBackgroundImage("image2.png");
+            }
+
+            // Log or display the angle for debugging purposes
+            Debug.WriteLine("Marker1 Angle: " + marker1.Angle);
+        }
+    }
+
+    private void checkCollisonTrue()
+    {
+        double distanceThreshold = 0.30;
+
+        // Get the objects for SymbolID 1 and 4
+        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
+        var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4);
+
+        if (marker4 != null && marker1 != null)
+        {
+            // Calculate the Euclidean distance between the two markers
+            double distance = Math.Sqrt(Math.Pow(marker1.X - marker4.X, 2) + Math.Pow(marker1.Y - marker4.Y, 2));
+            Debug.WriteLine("Distance: " + distance);
+
+            // Check if the markers are close enough (within the threshold)
+            if (distance <= distanceThreshold && marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865)
+            {
+                responseMessage = "Ashter katkout";
+                welcomeScreen = false;
+            }
+            else if (distance <= distanceThreshold && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865))
+            {
+                responseMessage = "Stubiddd";
+                welcomeScreen = false;
+            }
+        }
+    }
+    private void InitializeComponent()
+    {
+            this.SuspendLayout();
+            // 
+            // TuioDemo
+            // 
+            this.ClientSize = new System.Drawing.Size(282, 253);
+            this.Name = "TuioDemo";
+            this.Load += new System.EventHandler(this.TuioDemo_Load);
+            this.ResumeLayout(false);
+
+    }
+
+    private void TuioDemo_Load(object sender, EventArgs e)
+    {
+
+    }
+    private static string ReadMessage(NetworkStream stream)
+    {
+        byte[] buffer = new byte[1024];
+        int bytesRead = stream.Read(buffer, 0, buffer.Length);
+        string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+        // Send acknowledgment back to the client
+        byte[] ack = Encoding.UTF8.GetBytes("ACK");
+        stream.Write(ack, 0, ack.Length);
+
+        return message;
+    }
+    private static void StartServer()
+    {
+        TcpListener server = new TcpListener(IPAddress.Any, 12345);
+        server.Start();
+        Console.WriteLine("Server started...");
+
+        TcpClient client = server.AcceptTcpClient();
+        NetworkStream stream = client.GetStream();
+
+        string question = ReadMessage(stream);
+        if(question != null)
+        {
+            questions.Add(question);
+            Debug.WriteLine("Question: " + questions[0]);
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            string answer = ReadMessage(stream);
+            if (answer != null)
+            {
+                answers.Add(answer);
+            }
+            Console.WriteLine("Answer " + (i + 1) + ": " + answers[i]);
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            string imagePath = ReadMessage(stream);
+            if (imagePath != null)
+            {
+                imagePaths.Add(imagePath);
+            }
+            Console.WriteLine("Image Path " + (i + 1) + ": " + imagePaths[i]);
+        }
+
+        client.Close();
+        server.Stop();
+
+    }
+
+    public static void Main(String[] argv) {
+
+        int port = 0;
 			switch (argv.Length) {
 				case 1:
 					port = int.Parse(argv[0],null);
@@ -408,7 +558,10 @@ public class TuioDemo : Form, TuioListener
 					break;
 			}
 			
-			TuioDemo app = new TuioDemo(port);
-			Application.Run(app);
+		TuioDemo app = new TuioDemo(port);
+        Thread systemThread = new Thread(StartServer);
+        systemThread.Start();
+
+        Application.Run(app);
 		}
 	}
