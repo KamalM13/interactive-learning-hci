@@ -33,24 +33,24 @@ using System.Text;
 
 public class TuioDemo : Form, TuioListener
 {
-	private TuioClient client;
-	private Dictionary<long, TuioObject> objectList;
-	private Dictionary<long, TuioCursor> cursorList;
-	private Dictionary<long, TuioBlob> blobList;
+    private TuioClient client;
+    private Dictionary<long, TuioObject> objectList;
+    private Dictionary<long, TuioCursor> cursorList;
+    private Dictionary<long, TuioBlob> blobList;
 
-	public static int width, height;
-	private int window_width = 640;
-	private int window_height = 480;
-	private int window_left = 0;
-	private int window_top = 0;
-	private int screen_width = Screen.PrimaryScreen.Bounds.Width;
-	private int screen_height = Screen.PrimaryScreen.Bounds.Height;
+    public static int width, height;
+    private int window_width = 640;
+    private int window_height = 480;
+    private int window_left = 0;
+    private int window_top = 0;
+    private int screen_width = Screen.PrimaryScreen.Bounds.Width;
+    private int screen_height = Screen.PrimaryScreen.Bounds.Height;
 
-	private bool fullscreen;
-	private bool verbose;
+    private bool fullscreen;
+    private bool verbose;
 
-	private bool welcomeScreen = true;
-	private string Question = "What is the capital of Egypt?";
+    private bool welcomeScreen = true;
+    private string Question = "What is the capital of Egypt?";
     private string choiceOne = "Alex";
     private string choiceTwo = "Cairo";
     private string choiceThree = "Giza";
@@ -59,101 +59,112 @@ public class TuioDemo : Form, TuioListener
 
     private static List<string> questions = new List<string>();
     private static List<string> imagePaths = new List<string>();
-    private static List<string> answers = new List<string>();  
+    private static List<string> answers = new List<string>();
 
     Font font = new Font("Arial", 10.0f);
-	SolidBrush fntBrush = new SolidBrush(Color.White);
-	SolidBrush bgrBrush = new SolidBrush(Color.Purple);
-	SolidBrush curBrush = new SolidBrush(Color.FromArgb(192, 0, 192));
-	SolidBrush objBrush = new SolidBrush(Color.FromArgb(64, 0, 0));
-	SolidBrush blbBrush = new SolidBrush(Color.FromArgb(64, 64, 64));
-	Pen curPen = new Pen(new SolidBrush(Color.Blue), 1);
+    SolidBrush fntBrush = new SolidBrush(Color.White);
+    SolidBrush bgrBrush = new SolidBrush(Color.Purple);
+    SolidBrush curBrush = new SolidBrush(Color.FromArgb(192, 0, 192));
+    SolidBrush objBrush = new SolidBrush(Color.FromArgb(64, 0, 0));
+    SolidBrush blbBrush = new SolidBrush(Color.FromArgb(64, 64, 64));
+    Pen curPen = new Pen(new SolidBrush(Color.Blue), 1);
 
-	public TuioDemo(int port) {
+    public TuioDemo(int port)
+    {
 
-		verbose = false;
-		fullscreen = false;
-		width = window_width;
-		height = window_height;
+        verbose = false;
+        fullscreen = false;
+        width = window_width;
+        height = window_height;
 
-		this.ClientSize = new System.Drawing.Size(width, height);
-		this.Name = "TuioDemo";
-		this.Text = "TuioDemo";
+        this.ClientSize = new System.Drawing.Size(width, height);
+        this.Name = "TuioDemo";
+        this.Text = "TuioDemo";
 
-		this.Closing += new CancelEventHandler(Form_Closing);
-		this.KeyDown += new KeyEventHandler(Form_KeyDown);
+        this.Closing += new CancelEventHandler(Form_Closing);
+        this.KeyDown += new KeyEventHandler(Form_KeyDown);
 
-		this.SetStyle(ControlStyles.AllPaintingInWmPaint |
-						ControlStyles.UserPaint |
-						ControlStyles.DoubleBuffer, true);
+        this.SetStyle(ControlStyles.AllPaintingInWmPaint |
+                        ControlStyles.UserPaint |
+                        ControlStyles.DoubleBuffer, true);
 
-		objectList = new Dictionary<long, TuioObject>(128);
-		cursorList = new Dictionary<long, TuioCursor>(128);
-		blobList = new Dictionary<long, TuioBlob>(128);
+        objectList = new Dictionary<long, TuioObject>(128);
+        cursorList = new Dictionary<long, TuioCursor>(128);
+        blobList = new Dictionary<long, TuioBlob>(128);
 
-		client = new TuioClient(port);
-		client.addTuioListener(this);
+        client = new TuioClient(port);
+        client.addTuioListener(this);
 
-		client.connect();
-	}
+        client.connect();
+    }
 
-	private void Form_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e) {
+    private void Form_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+    {
 
-		if (e.KeyData == Keys.F1) {
-			if (fullscreen == false) {
+        if (e.KeyData == Keys.F1)
+        {
+            if (fullscreen == false)
+            {
 
-				width = screen_width;
-				height = screen_height;
+                width = screen_width;
+                height = screen_height;
 
-				window_left = this.Left;
-				window_top = this.Top;
+                window_left = this.Left;
+                window_top = this.Top;
 
-				this.FormBorderStyle = FormBorderStyle.None;
-				this.Left = 0;
-				this.Top = 0;
-				this.Width = screen_width;
-				this.Height = screen_height;
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.Left = 0;
+                this.Top = 0;
+                this.Width = screen_width;
+                this.Height = screen_height;
 
-				fullscreen = true;
-			} else {
+                fullscreen = true;
+            }
+            else
+            {
 
-				width = window_width;
-				height = window_height;
+                width = window_width;
+                height = window_height;
 
-				this.FormBorderStyle = FormBorderStyle.Sizable;
-				this.Left = window_left;
-				this.Top = window_top;
-				this.Width = window_width;
-				this.Height = window_height;
+                this.FormBorderStyle = FormBorderStyle.Sizable;
+                this.Left = window_left;
+                this.Top = window_top;
+                this.Width = window_width;
+                this.Height = window_height;
 
-				fullscreen = false;
-			}
-		} else if (e.KeyData == Keys.Escape) {
-			this.Close();
+                fullscreen = false;
+            }
+        }
+        else if (e.KeyData == Keys.Escape)
+        {
+            this.Close();
 
-		} else if (e.KeyData == Keys.V) {
-			verbose = !verbose;
-		}
+        }
+        else if (e.KeyData == Keys.V)
+        {
+            verbose = !verbose;
+        }
 
-	}
+    }
 
-	private void Form_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-	{
-		client.removeTuioListener(this);
+    private void Form_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+        client.removeTuioListener(this);
 
-		client.disconnect();
-		System.Environment.Exit(0);
-	}
+        client.disconnect();
+        System.Environment.Exit(0);
+    }
 
-	public void addTuioObject(TuioObject o) {
-		lock (objectList)
-		{
-			objectList.Add(o.SessionID, o);
-		}
+    public void addTuioObject(TuioObject o)
+    {
+        lock (objectList)
+        {
+            objectList.Add(o.SessionID, o);
+        }
 
-		// Check for the TUIO object ID and change the screen based on the SymbolID
-		if (welcomeScreen)
-		{
+        // Check for the TUIO object ID and change the screen based on the SymbolID
+        if (welcomeScreen)
+        {
             /*if (objectList.Values.Any(obj => obj.SymbolID == 1) &&
            objectList.Values.Any(obj => obj.SymbolID == 4))
             {
@@ -166,30 +177,32 @@ public class TuioDemo : Form, TuioListener
                 responseMessage = "Stubiddd";
                 welcomeScreen = false;
             }*/
-           
-    //        if (objectList.Values.Any(obj => obj.SymbolID == 1) &&
-				//objectList.Values.Any(obj => obj.SymbolID == 4) &&
-				//objectList.Values.Any(obj => obj.SymbolID == 1 && obj.Angle >= 5.23599 && obj.Angle <= 6.10865))  // Range: 300 to 350 degrees (in radians)
-    //        {
-                
-    //            responseMessage = "Ashter katkout";
-    //            welcomeScreen = false;
-    //        }
-    //        else if (objectList.Values.Any(obj => obj.SymbolID == 4) &&
-    //                !objectList.Values.Any(obj => obj.SymbolID == 1 && obj.Angle >= 5.23599 && obj.Angle <= 6.10865))
-    //        {
-    //            responseMessage = "Stubiddd";
-    //            welcomeScreen = false;
-    //        }
+
+            //        if (objectList.Values.Any(obj => obj.SymbolID == 1) &&
+            //objectList.Values.Any(obj => obj.SymbolID == 4) &&
+            //objectList.Values.Any(obj => obj.SymbolID == 1 && obj.Angle >= 5.23599 && obj.Angle <= 6.10865))  // Range: 300 to 350 degrees (in radians)
+            //        {
+
+            //            responseMessage = "Ashter katkout";
+            //            welcomeScreen = false;
+            //        }
+            //        else if (objectList.Values.Any(obj => obj.SymbolID == 4) &&
+            //                !objectList.Values.Any(obj => obj.SymbolID == 1 && obj.Angle >= 5.23599 && obj.Angle <= 6.10865))
+            //        {
+            //            responseMessage = "Stubiddd";
+            //            welcomeScreen = false;
+            //        }
         }
-	}
+    }
 
-	public void updateTuioObject(TuioObject o) {
+    public void updateTuioObject(TuioObject o)
+    {
 
-		if (verbose) Console.WriteLine("set obj " + o.SymbolID + " " + o.SessionID + " " + o.X + " " + o.Y + " " + o.Angle + " " + o.MotionSpeed + " " + o.RotationSpeed + " " + o.MotionAccel + " " + o.RotationAccel);
-	}
+        if (verbose) Console.WriteLine("set obj " + o.SymbolID + " " + o.SessionID + " " + o.X + " " + o.Y + " " + o.Angle + " " + o.MotionSpeed + " " + o.RotationSpeed + " " + o.MotionAccel + " " + o.RotationAccel);
+    }
 
-	public void removeTuioObject(TuioObject o) {
+    public void removeTuioObject(TuioObject o)
+    {
         lock (objectList)
         {
             objectList.Remove(o.SessionID);
@@ -201,49 +214,60 @@ public class TuioDemo : Form, TuioListener
         {
             responseMessage = Question;  // Reset to welcome message
             welcomeScreen = true;
-		}
+        }
     }
 
-	public void addTuioCursor(TuioCursor c) {
-		lock (cursorList) {
-			cursorList.Add(c.SessionID, c);
-		}
-		if (verbose) Console.WriteLine("add cur " + c.CursorID + " (" + c.SessionID + ") " + c.X + " " + c.Y);
-	}
+    public void addTuioCursor(TuioCursor c)
+    {
+        lock (cursorList)
+        {
+            cursorList.Add(c.SessionID, c);
+        }
+        if (verbose) Console.WriteLine("add cur " + c.CursorID + " (" + c.SessionID + ") " + c.X + " " + c.Y);
+    }
 
-	public void updateTuioCursor(TuioCursor c) {
-		if (verbose) Console.WriteLine("set cur " + c.CursorID + " (" + c.SessionID + ") " + c.X + " " + c.Y + " " + c.MotionSpeed + " " + c.MotionAccel);
-	}
+    public void updateTuioCursor(TuioCursor c)
+    {
+        if (verbose) Console.WriteLine("set cur " + c.CursorID + " (" + c.SessionID + ") " + c.X + " " + c.Y + " " + c.MotionSpeed + " " + c.MotionAccel);
+    }
 
-	public void removeTuioCursor(TuioCursor c) {
-		lock (cursorList) {
-			cursorList.Remove(c.SessionID);
-		}
-		if (verbose) Console.WriteLine("del cur " + c.CursorID + " (" + c.SessionID + ")");
-	}
+    public void removeTuioCursor(TuioCursor c)
+    {
+        lock (cursorList)
+        {
+            cursorList.Remove(c.SessionID);
+        }
+        if (verbose) Console.WriteLine("del cur " + c.CursorID + " (" + c.SessionID + ")");
+    }
 
-	public void addTuioBlob(TuioBlob b) {
-		lock (blobList) {
-			blobList.Add(b.SessionID, b);
-		}
-		if (verbose) Console.WriteLine("add blb " + b.BlobID + " (" + b.SessionID + ") " + b.X + " " + b.Y + " " + b.Angle + " " + b.Width + " " + b.Height + " " + b.Area);
-	}
+    public void addTuioBlob(TuioBlob b)
+    {
+        lock (blobList)
+        {
+            blobList.Add(b.SessionID, b);
+        }
+        if (verbose) Console.WriteLine("add blb " + b.BlobID + " (" + b.SessionID + ") " + b.X + " " + b.Y + " " + b.Angle + " " + b.Width + " " + b.Height + " " + b.Area);
+    }
 
-	public void updateTuioBlob(TuioBlob b) {
+    public void updateTuioBlob(TuioBlob b)
+    {
 
-		if (verbose) Console.WriteLine("set blb " + b.BlobID + " (" + b.SessionID + ") " + b.X + " " + b.Y + " " + b.Angle + " " + b.Width + " " + b.Height + " " + b.Area + " " + b.MotionSpeed + " " + b.RotationSpeed + " " + b.MotionAccel + " " + b.RotationAccel);
-	}
+        if (verbose) Console.WriteLine("set blb " + b.BlobID + " (" + b.SessionID + ") " + b.X + " " + b.Y + " " + b.Angle + " " + b.Width + " " + b.Height + " " + b.Area + " " + b.MotionSpeed + " " + b.RotationSpeed + " " + b.MotionAccel + " " + b.RotationAccel);
+    }
 
-	public void removeTuioBlob(TuioBlob b) {
-		lock (blobList) {
-			blobList.Remove(b.SessionID);
-		}
-		if (verbose) Console.WriteLine("del blb " + b.BlobID + " (" + b.SessionID + ")");
-	}
+    public void removeTuioBlob(TuioBlob b)
+    {
+        lock (blobList)
+        {
+            blobList.Remove(b.SessionID);
+        }
+        if (verbose) Console.WriteLine("del blb " + b.BlobID + " (" + b.SessionID + ")");
+    }
 
-	public void refresh(TuioTime frameTime) {
-		Invalidate();
-	}
+    public void refresh(TuioTime frameTime)
+    {
+        Invalidate();
+    }
 
     private void DrawArrow(Graphics g, float x, float y, float angle, float size)
     {
@@ -272,7 +296,7 @@ public class TuioDemo : Form, TuioListener
     }
 
     protected override void OnPaintBackground(PaintEventArgs pevent)
-	{
+    {
         // Getting the graphics object
         /*Graphics g = pevent.Graphics;
         g.FillRectangle(bgrBrush, new Rectangle(0,0,width,height));
@@ -342,7 +366,8 @@ public class TuioDemo : Form, TuioListener
             }
         }*/
         Graphics g = pevent.Graphics;
-        g.FillRectangle(bgrBrush, new Rectangle(0, 0, width, height));
+        //g.FillRectangle(bgrBrush, new Rectangle(0, 0, width, height));
+        g.DrawImage(Image.FromFile("home.jpg"), 0, 0, width, height);
         changeQuestionBackground(pevent);
         SolidBrush c1Brush = new SolidBrush(Color.Red);
         SolidBrush c2Brush = new SolidBrush(Color.Green);
@@ -385,7 +410,7 @@ public class TuioDemo : Form, TuioListener
 
             // Draw the main "wheel" (central question)
             g.FillEllipse(c1Brush, width / 2 - 100, height / 2 - 50, 200, 100); // Central circle for the question
-            if(questions.Count > 0)
+            if (questions.Count > 0)
             {
                 g.DrawString(questions[0], font, fntBrush, new PointF((width - g.MeasureString(questions[0], font).Width) / 2, (height - g.MeasureString(questions[0], font).Height) / 2));
             }
@@ -408,7 +433,7 @@ public class TuioDemo : Form, TuioListener
             checkCollisonTrue();
 
             // Check if the object with SymbolID == 1 exists in objectList
-            
+
         }
         else
         {
@@ -428,15 +453,19 @@ public class TuioDemo : Form, TuioListener
             // Check if marker1's angle is within the range 5.23599 to 6.10865
             if (marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865)
             {
-                
-                // Trigger background change or other actions
-                g.DrawImage(Image.FromFile("cairo.png"), 0, 0, width, height);
+                g.DrawImage(Image.FromFile("cairo.jpg"), 0, 0, width, height);
             }
-            else
+            if (marker1.Angle >= 3.49066 && marker1.Angle <= 4.01426)
             {
-                
-                // Optionally trigger different background or other actions
-               // changeBackgroundImage("image2.png");
+                g.DrawImage(Image.FromFile("aswan.jpg"), 0, 0, width, height);
+            }
+            if (marker1.Angle >= 2.0944 && marker1.Angle <= 2.61799)
+            {
+                g.DrawImage(Image.FromFile("giza.jpg"), 0, 0, width, height);
+            }
+            if (marker1.Angle >= 0.436332 && marker1.Angle <= 0.959931)
+            {
+                g.DrawImage(Image.FromFile("behira.jpg"), 0, 0, width, height);
             }
 
             // Log or display the angle for debugging purposes
@@ -466,21 +495,21 @@ public class TuioDemo : Form, TuioListener
             }
             else if (distance <= distanceThreshold && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865))
             {
-                responseMessage = "Stubiddd";
+                responseMessage = "Try again";
                 welcomeScreen = false;
             }
         }
     }
     private void InitializeComponent()
     {
-            this.SuspendLayout();
-            // 
-            // TuioDemo
-            // 
-            this.ClientSize = new System.Drawing.Size(282, 253);
-            this.Name = "TuioDemo";
-            this.Load += new System.EventHandler(this.TuioDemo_Load);
-            this.ResumeLayout(false);
+        this.SuspendLayout();
+        // 
+        // TuioDemo
+        // 
+        this.ClientSize = new System.Drawing.Size(282, 253);
+        this.Name = "TuioDemo";
+        this.Load += new System.EventHandler(this.TuioDemo_Load);
+        this.ResumeLayout(false);
 
     }
 
@@ -510,7 +539,7 @@ public class TuioDemo : Form, TuioListener
         NetworkStream stream = client.GetStream();
 
         string question = ReadMessage(stream);
-        if(question != null)
+        if (question != null)
         {
             questions.Add(question);
             Debug.WriteLine("Question: " + questions[0]);
@@ -541,27 +570,29 @@ public class TuioDemo : Form, TuioListener
 
     }
 
-    public static void Main(String[] argv) {
+    public static void Main(String[] argv)
+    {
 
         int port = 0;
-			switch (argv.Length) {
-				case 1:
-					port = int.Parse(argv[0],null);
-					if(port==0) goto default;
-					break;
-				case 0:
-					port = 3333;
-					break;
-				default:
-					Console.WriteLine("usage: mono TuioDemo [port]");
-					System.Environment.Exit(0);
-					break;
-			}
-			
-		TuioDemo app = new TuioDemo(port);
+        switch (argv.Length)
+        {
+            case 1:
+                port = int.Parse(argv[0], null);
+                if (port == 0) goto default;
+                break;
+            case 0:
+                port = 3333;
+                break;
+            default:
+                Console.WriteLine("usage: mono TuioDemo [port]");
+                System.Environment.Exit(0);
+                break;
+        }
+
+        TuioDemo app = new TuioDemo(port);
         Thread systemThread = new Thread(StartServer);
         systemThread.Start();
 
         Application.Run(app);
-		}
-	}
+    }
+}

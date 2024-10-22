@@ -26,8 +26,8 @@ def start_client():
 
                     # Define the question, answers, and image paths
             question = "What is the capital of Egypt?"
-            answers = ["Cairo", "Aswan", "Giza", "Behira"]
-            image_paths = ["cairo.png", "aswan.png", "giza.png", "behira.png"]
+            answers = ["Aswan", "Cairo", "Giza", "Behira"]
+            image_paths = ["cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg"]
 
             send_data(client_socket, question, answers, image_paths)
             time.sleep(5)  # Pause for a while before sending again (optional)
