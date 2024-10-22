@@ -6,7 +6,6 @@
 *.o
 *.so
 *.pdb
-bin/
 obj/
 Help/
 TestResults/
