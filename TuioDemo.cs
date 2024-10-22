@@ -384,7 +384,7 @@ public class TuioDemo : Form, TuioListener
                 float rotationAngleDegrees = (float)(tuioObject.Angle * (180.0 / Math.PI));
 
                 // Draw the angle text on the screen
-                g.DrawString("Angle: " + rotationAngleDegrees.ToString("0.0") + "°", font, fntBrush, new PointF(width / 2 - 100, height / 2 - 200));
+                g.DrawString("Angle: " + rotationAngleDegrees.ToString("0.0") + "ï¿½", font, fntBrush, new PointF(width / 2 - 100, height / 2 - 200));
             }
             if (objectList.Count > 0)
             {
@@ -438,6 +438,22 @@ public class TuioDemo : Form, TuioListener
         else
         {
             // Display the response after TUIO interaction
+            if (responseMessage == "Ashter katkout")
+            {
+                g.DrawString
+                    (responseMessage, 
+                     new Font("Comic Sans MS", 18.0f, FontStyle.Bold),
+                     new SolidBrush(Color.Cyan), 
+                     new PointF(width / 2 - 100, height / 2));
+            }
+            else if (responseMessage == "Try again")
+            {
+                g.DrawString
+                    (responseMessage,
+                     new Font("Arial", 16.0f, FontStyle.Italic),
+                     new SolidBrush(Color.Red), 
+                     new PointF(width / 2 - 100, height / 2));
+            }
             g.DrawString(responseMessage, font, fntBrush, new PointF(width / 2 - 100, height / 2));
         }
 
