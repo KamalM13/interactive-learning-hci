@@ -30,6 +30,7 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
 public class TuioDemo : Form, TuioListener
 {
@@ -49,7 +50,7 @@ public class TuioDemo : Form, TuioListener
     private bool fullscreen;
     private bool verbose;
 
-    private bool welcomeScreen = true;
+    private static int screen = 1;
     private string Question = "What is the capital of Egypt?";
     private string choiceOne = "Alex";
     private string choiceTwo = "Cairo";
@@ -60,6 +61,7 @@ public class TuioDemo : Form, TuioListener
     private static List<string> questions = new List<string>();
     private static List<string> imagePaths = new List<string>();
     private static List<string> answers = new List<string>();
+    private static List<string> bluetoothDevices = new List<string>();
 
     Font font = new Font("Arial", 10.0f);
     SolidBrush fntBrush = new SolidBrush(Color.White);
@@ -163,7 +165,7 @@ public class TuioDemo : Form, TuioListener
         }
 
         // Check for the TUIO object ID and change the screen based on the SymbolID
-        if (welcomeScreen)
+        //if (screen)
         {
             /*if (objectList.Values.Any(obj => obj.SymbolID == 1) &&
            objectList.Values.Any(obj => obj.SymbolID == 4))
@@ -213,7 +215,7 @@ public class TuioDemo : Form, TuioListener
             !objectList.Values.Any(obj => obj.SymbolID == 4))
         {
             responseMessage = Question;  // Reset to welcome message
-            welcomeScreen = true;
+            screen = 1;
         }
     }
 
@@ -374,7 +376,7 @@ public class TuioDemo : Form, TuioListener
         SolidBrush c3Brush = new SolidBrush(Color.Blue);
         SolidBrush c4Brush = new SolidBrush(Color.Olive);
 
-        if (welcomeScreen)
+        if (screen == 1) // 1 is the question screen
         {
             var tuioObject = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
 
@@ -435,7 +437,7 @@ public class TuioDemo : Form, TuioListener
             // Check if the object with SymbolID == 1 exists in objectList
 
         }
-        else
+        else if(screen == 2) // 2 is the answer screen
         {
             // Display the response after TUIO interaction
             if (responseMessage == "Ashter katkout")
@@ -450,11 +452,16 @@ public class TuioDemo : Form, TuioListener
             {
                 g.DrawString
                     (responseMessage,
-                     new Font("Arial", 16.0f, FontStyle.Italic),
+                     new Font("Arial", 19.0f, FontStyle.Italic),
                      new SolidBrush(Color.Red), 
                      new PointF(width / 2 - 100, height / 2));
             }
-            g.DrawString(responseMessage, font, fntBrush, new PointF(width / 2 - 100, height / 2));
+            checkCollisonTrue();
+            //g.DrawString(responseMessage, font, fntBrush, new PointF(width / 2 - 100, height / 2));
+        }
+        else if(screen == 3) // 3 is the teacher screen
+        {
+
         }
 
     }
@@ -491,7 +498,7 @@ public class TuioDemo : Form, TuioListener
 
     private void checkCollisonTrue()
     {
-        double distanceThreshold = 0.30;
+        double distanceThreshold = 0.35;
 
         // Get the objects for SymbolID 1 and 4
         var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
@@ -503,16 +510,20 @@ public class TuioDemo : Form, TuioListener
             double distance = Math.Sqrt(Math.Pow(marker1.X - marker4.X, 2) + Math.Pow(marker1.Y - marker4.Y, 2));
             Debug.WriteLine("Distance: " + distance);
 
-            // Check if the markers are close enough (within the threshold)
-            if (distance <= distanceThreshold && marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865)
+           
+            if(distance >= distanceThreshold)
+            {
+                screen = 1;
+            }
+            else if (distance <= distanceThreshold && marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865)
             {
                 responseMessage = "Ashter katkout";
-                welcomeScreen = false;
+                screen = 2;
             }
             else if (distance <= distanceThreshold && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865))
             {
                 responseMessage = "Try again";
-                welcomeScreen = false;
+                screen = 2;
             }
         }
     }
@@ -545,70 +556,104 @@ public class TuioDemo : Form, TuioListener
 
         return message;
     }
-    private static void StartServer()
+    private static async Task<string> ReadMessageAsync(NetworkStream stream)
+    {
+        byte[] lengthBytes = new byte[4];
+        int bytesRead = await stream.ReadAsync(lengthBytes, 0, lengthBytes.Length);
+
+        if (bytesRead == 0) return null; // Client disconnected
+        int length = BitConverter.ToInt32(lengthBytes, 0);
+
+        byte[] messageBytes = new byte[length];
+        bytesRead = await stream.ReadAsync(messageBytes, 0, length);
+        byte[] ack = new byte[] { 1 };  // Acknowledgment byte
+        await stream.WriteAsync(ack, 0, ack.Length);
+        return Encoding.UTF8.GetString(messageBytes, 0, bytesRead);
+
+    }
+
+    private static async Task ProcessClientAsync(TcpClient client)
+    {
+        using (NetworkStream stream = client.GetStream())
+        {
+            while (client.Connected)  // Continuous loop for real-time handling
+            {
+                string message = await ReadMessageAsync(stream);
+                if (message == null)
+                {
+                    Console.WriteLine("Client disconnected.");
+                    break;
+                }
+                Debug.WriteLine( message);
+
+                // Determine message type by prefix and process accordingly
+                if (message.StartsWith("Q:"))
+                {
+                    string question = message.Substring(2);
+                    questions.Add(question);
+                    Debug.WriteLine("Question: " + question);
+                }
+                else if (message.StartsWith("A:"))
+                {
+                    string answer = message.Substring(2);
+                    answers.Add(answer);
+                    Debug.WriteLine("Answer " + answers.Count + ": " + answer);
+                }
+                else if (message.StartsWith("IMG:"))
+                {
+                    string imagePath = message.Substring(4);
+                    imagePaths.Add(imagePath);
+                    Debug.WriteLine("Image Path " + imagePaths.Count + ": " + imagePath);
+                }
+            }
+        }
+
+        client.Close();
+    }
+    public static async Task StartServer()
     {
         TcpListener server = new TcpListener(IPAddress.Any, 12345);
         server.Start();
         Console.WriteLine("Server started...");
 
-        TcpClient client = server.AcceptTcpClient();
-        NetworkStream stream = client.GetStream();
-
-        string question = ReadMessage(stream);
-        if (question != null)
+        while (true)  // Continuous loop to keep server running
         {
-            questions.Add(question);
-            Debug.WriteLine("Question: " + questions[0]);
+            TcpClient client = await server.AcceptTcpClientAsync();
+            Console.WriteLine("Client connected.");
+
+            _ = ProcessClientAsync(client); // Process each client in a separate task
         }
-
-        for (int i = 0; i < 4; i++)
-        {
-            string answer = ReadMessage(stream);
-            if (answer != null)
-            {
-                answers.Add(answer);
-            }
-            Console.WriteLine("Answer " + (i + 1) + ": " + answers[i]);
-        }
-
-        for (int i = 0; i < 4; i++)
-        {
-            string imagePath = ReadMessage(stream);
-            if (imagePath != null)
-            {
-                imagePaths.Add(imagePath);
-            }
-            Console.WriteLine("Image Path " + (i + 1) + ": " + imagePaths[i]);
-        }
-
-        client.Close();
-        server.Stop();
-
     }
 
-    public static void Main(String[] argv)
+    public static void Main(string[] argv)
     {
-
         int port = 0;
         switch (argv.Length)
         {
             case 1:
-                port = int.Parse(argv[0], null);
+                port = int.Parse(argv[0]);
                 if (port == 0) goto default;
                 break;
             case 0:
                 port = 3333;
                 break;
             default:
-                Console.WriteLine("usage: mono TuioDemo [port]");
-                System.Environment.Exit(0);
+                Console.WriteLine("usage: TuioDemo [port]");
+                Environment.Exit(0);
                 break;
         }
 
+        // Assuming TuioDemo is a defined class that accepts an integer port
         TuioDemo app = new TuioDemo(port);
-        Thread systemThread = new Thread(StartServer);
+
+        // Start the server in a new background thread
+        Thread systemThread = new Thread(() => StartServer().Wait())
+        {
+            IsBackground = true // Ensures the thread stops when the main app closes
+        };
         systemThread.Start();
 
+        // Run the main application
         Application.Run(app);
     }
 }
