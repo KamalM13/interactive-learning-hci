@@ -335,7 +335,7 @@ public class TuioDemo : Form, TuioListener
             drawScreenThree(g);
             checkCollisonTrue();
         }
-        else if(screen == 4)
+        else if (screen == 4)
         {
             g.DrawString("hi", font, fntBrush, new PointF(width / 2 - 100, height / 2));
             checkCollisonTrue();
@@ -343,9 +343,9 @@ public class TuioDemo : Form, TuioListener
 
     }
 
-    private void drawScreenOne(PaintEventArgs pevent, 
+    private void drawScreenOne(PaintEventArgs pevent,
         Graphics g,
-        SolidBrush c1Brush, 
+        SolidBrush c1Brush,
         SolidBrush c2Brush,
         SolidBrush c3Brush,
         SolidBrush c4Brush)
@@ -404,7 +404,7 @@ public class TuioDemo : Form, TuioListener
             g.DrawString(answers[3], font, fntBrush, new PointF(width - g.MeasureString(answers[3], font).Width - 40, height - g.MeasureString(choiceFour, font).Height - 40));  // Fourth choice
         }
 
-       
+
 
     }
 
@@ -503,26 +503,24 @@ public class TuioDemo : Form, TuioListener
         }
         var marker2 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 2); // navigation TUIO
         float thresholdSpeed = 0.01f;
-        if (marker2 != null )
+        if (marker2 != null)
         {
-            bool isInRightHalf = (marker2.X*window_width) > window_width / 2;
+
             Debug.WriteLine("Marker2 Speed: " + marker2.RotationSpeed);
             // Check if it's on the right half and movement exceeds the threshold
-            if (isInRightHalf )
+            if (marker2.RotationSpeed > 7)
             {
-                if (marker2.RotationSpeed > 7)
-                {
-                    screen += 1;
-                    if (screen > 4)
-                        screen = 1;
-                }
-                if(marker2.RotationSpeed < -7)
-                {
-                    screen -= 1;
-                    if (screen < 1)
-                        screen = 4;
-                }
+                screen += 1;
+                if (screen > 4)
+                    screen = 1;
             }
+            if (marker2.RotationSpeed < -7)
+            {
+                screen -= 1;
+                if (screen < 1)
+                    screen = 4;
+            }
+
         }
     }
 
