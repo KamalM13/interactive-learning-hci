@@ -57,6 +57,9 @@ public class TuioDemo : Form, TuioListener
     private string choiceThree = "Giza";
     private string choiceFour = "Aswan";
     private string responseMessage = "";
+    private int score = 0;
+    private Dictionary<string, int> studentScores = new Dictionary<string, int>();
+    private string dummyStudentId = "123";
 
     private static List<string> questions = new List<string>();
     private static List<string> imagePaths = new List<string>();
@@ -443,7 +446,7 @@ public class TuioDemo : Form, TuioListener
             if (responseMessage == "Ashter katkout")
             {
                 g.DrawString
-                    (responseMessage, 
+                    (responseMessage + "current score: " + score, 
                      new Font("Comic Sans MS", 18.0f, FontStyle.Bold),
                      new SolidBrush(Color.Cyan), 
                      new PointF(width / 2 - 100, height / 2));
@@ -451,7 +454,7 @@ public class TuioDemo : Form, TuioListener
             else if (responseMessage == "Try again")
             {
                 g.DrawString
-                    (responseMessage,
+                    (responseMessage + "current score: " + score,
                      new Font("Arial", 19.0f, FontStyle.Italic),
                      new SolidBrush(Color.Red), 
                      new PointF(width / 2 - 100, height / 2));
@@ -464,6 +467,12 @@ public class TuioDemo : Form, TuioListener
 
         }
 
+    }
+
+    private void addScore()
+    {
+        score += 1;
+        studentScores[dummyStudentId] = score;
     }
 
     private void changeQuestionBackground(PaintEventArgs pevent)
@@ -519,6 +528,7 @@ public class TuioDemo : Form, TuioListener
             {
                 responseMessage = "Ashter katkout";
                 screen = 2;
+                addScore();
             }
             else if (distance <= distanceThreshold && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865))
             {
