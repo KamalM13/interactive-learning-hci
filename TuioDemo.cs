@@ -313,24 +313,32 @@ public class TuioDemo : Form, TuioListener
         SolidBrush c4Brush = new SolidBrush(Color.Olive);
 
         //check if bluetooh list is populated
-        for (int i = 0; i < bluetoothDevices.Count; i++)
-        {
-            if (bluetoothDevices[i] == "CC:F9:F0:CD:B9:DC")
-                screen = 3;
-        }
+        //for (int i = 0; i < bluetoothDevices.Count; i++)
+        //{
+        //    if (bluetoothDevices[i] == "CC:F9:F0:CD:B9:DC")
+        //        screen = 3;
+        //}
 
 
         if (screen == 1) // 1 is the question screen
         {
             drawScreenOne(pevent, g, c1Brush, c2Brush, c3Brush, c4Brush);
+            checkCollisonTrue();
         }
         else if (screen == 2) // 2 is the answer screen
         {
             drawScreenTwo(g);
+            checkCollisonTrue();
         }
         else if (screen == 3) // 3 is the teacher screen
         {
             drawScreenThree(g);
+            checkCollisonTrue();
+        }
+        else if(screen == 4)
+        {
+            g.DrawString("hi", font, fntBrush, new PointF(width / 2 - 100, height / 2));
+            checkCollisonTrue();
         }
 
     }
@@ -388,7 +396,7 @@ public class TuioDemo : Form, TuioListener
         g.FillEllipse(c4Brush, width - 120, height - 80, 100, 60);  // Bottom-right
 
         // Draw the text on the ellipses for choices
-        if (answers.Count > 0)
+        if (answers.Count > 3)
         {
             g.DrawString(answers[0], font, fntBrush, new PointF(40, 40));  // Position for first choice
             g.DrawString(answers[1], font, fntBrush, new PointF(width - g.MeasureString(answers[1], font).Width - 40, 40));  // Second choice
@@ -396,7 +404,7 @@ public class TuioDemo : Form, TuioListener
             g.DrawString(answers[3], font, fntBrush, new PointF(width - g.MeasureString(answers[3], font).Width - 40, height - g.MeasureString(choiceFour, font).Height - 40));  // Fourth choice
         }
 
-        checkCollisonTrue();
+       
 
     }
 
@@ -468,7 +476,7 @@ public class TuioDemo : Form, TuioListener
 
         // Get the objects for SymbolID 1 and 4
         var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
-        var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4);
+        var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4); // Answer selection TUIO
 
         if (marker4 != null && marker1 != null)
         {
@@ -493,7 +501,31 @@ public class TuioDemo : Form, TuioListener
                 screen = 2;
             }
         }
+        var marker2 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 2); // navigation TUIO
+        float thresholdSpeed = 0.01f;
+        if (marker2 != null )
+        {
+            bool isInRightHalf = (marker2.X*window_width) > window_width / 2;
+            Debug.WriteLine("Marker2 Speed: " + marker2.RotationSpeed);
+            // Check if it's on the right half and movement exceeds the threshold
+            if (isInRightHalf )
+            {
+                if (marker2.RotationSpeed > 7)
+                {
+                    screen += 1;
+                    if (screen > 4)
+                        screen = 1;
+                }
+                if(marker2.RotationSpeed < -7)
+                {
+                    screen -= 1;
+                    if (screen < 1)
+                        screen = 4;
+                }
+            }
+        }
     }
+
     private void InitializeComponent()
     {
         this.SuspendLayout();

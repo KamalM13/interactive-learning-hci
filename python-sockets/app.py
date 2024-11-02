@@ -31,7 +31,7 @@ def send_message(connection, message):
     connection.recv(1)  # Expect a single-byte acknowledgment
 
 
-def send_data(connection, question, answers, image_paths, bluetooth_devices=[]):
+def send_data(connection, question, answers, image_paths, bluetooth_devices=[], flag = False):
     send_message(connection, f"Q:{question}")
     for answer in answers:
         send_message(connection, f"A:{answer}")
@@ -39,7 +39,9 @@ def send_data(connection, question, answers, image_paths, bluetooth_devices=[]):
         send_message(connection, f"IMG:{img_path}")
     for addr, name in bluetooth_devices:
         send_message(connection, f"BT:{addr},{name}")
+        flag = True
     print("All data sent.")
+    return flag 
 
 from queue import Empty
 
@@ -53,7 +55,7 @@ def start_client(queue):
             question = "What is the capital of Egypt?"
             answers = ["Aswan", "Cairo", "Giza", "Behira"]
             image_paths = ["cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg"]
-
+            flag = True
             # Continuously listen for new Bluetooth devices in the queue
             while True:
                 try:
@@ -61,19 +63,19 @@ def start_client(queue):
                     bluetooth_devices = queue.get_nowait()
                     # Send data with the latest Bluetooth information
                     send_data(
-                        client_socket, question, answers, image_paths, bluetooth_devices
+                        client_socket, question, answers, image_paths, bluetooth_devices, flag
                     )
                 except Empty:
+                    if(flag): break
                     # Queue is empty, proceed without sending Bluetooth data
                     send_data(client_socket, question, answers, image_paths)
-                
                 # Short delay to prevent tight-looping
                 time.sleep(0.5)
-
         except Exception as e:
             print(f"Connection failed: {e}")
             time.sleep(2)
         finally:
+            if flag: break
             client_socket.close()
 
 
