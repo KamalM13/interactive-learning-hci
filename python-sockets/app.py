@@ -4,8 +4,8 @@ import struct
 import threading
 import queue
 from queue import Empty
-import bluetooth
-
+#import bluetooth
+import subprocess
 
 def scan_bluetooth_devices(queue):
     print("Starting continuous Bluetooth scan...")
@@ -13,9 +13,9 @@ def scan_bluetooth_devices(queue):
     while True:
         try:
             # Discover nearby Bluetooth devices
-            nearby_devices = bluetooth.discover_devices(lookup_names=True)
+            #nearby_devices = bluetooth.discover_devices(lookup_names=True)
             # Add the latest scan results to the queue
-            queue.put(nearby_devices)
+            #queue.put(nearby_devices)
             # Short delay before the next scan to avoid excessive looping
             time.sleep(1)
 
@@ -31,7 +31,7 @@ def send_message(connection, message):
     connection.recv(1)  # Expect a single-byte acknowledgment
 
 
-def send_data(connection, question, answers, image_paths, bluetooth_devices=[]):
+def send_data(connection, question, answers, image_paths, bluetooth_devices=[], gesture_data=None):
     send_message(connection, f"Q:{question}")
     for answer in answers:
         send_message(connection, f"A:{answer}")
@@ -39,6 +39,8 @@ def send_data(connection, question, answers, image_paths, bluetooth_devices=[]):
         send_message(connection, f"IMG:{img_path}")
     for addr, name in bluetooth_devices:
         send_message(connection, f"BT:{addr},{name}")
+    if gesture_data:
+        send_message(connection, f"GESTURE:{gesture_data}")
     print("All data sent.")
 
 from queue import Empty
@@ -81,6 +83,10 @@ def start_client(queue):
 def main():
     # Queue for sharing data between Bluetooth scanning and client sending
     bluetooth_queue = queue.Queue()
+    
+    # Start the gesture recognition script
+    live="F:/Uni/4th year/Hci/project/interactive-learning-hci/python-sockets/live_ges.py"
+    gesture_process = subprocess.Popen(["python", live])
 
     # Start the socket client in a separate thread
     client_thread = threading.Thread(target=start_client, args=(bluetooth_queue,))
@@ -95,6 +101,8 @@ def main():
     # Wait for threads to complete
     bluetooth_thread.join()
     client_thread.join()
+    # Optionally, wait for the gesture process to complete
+    #gesture_process.wait()  # This will wait for live_ges.py to finish if needed
 
 
 if __name__ == "__main__":
