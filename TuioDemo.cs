@@ -57,6 +57,9 @@ public class TuioDemo : Form, TuioListener
     private string choiceThree = "Giza";
     private string choiceFour = "Aswan";
     private string responseMessage = "";
+    private int score = 0;
+    private Dictionary<string, int> studentScores = new Dictionary<string, int>();
+    private string dummyStudentId = "123";
 
     private static List<string> questions = new List<string>();
     private static List<string> imagePaths = new List<string>();
@@ -422,6 +425,13 @@ public class TuioDemo : Form, TuioListener
     {
         g.DrawString("Hi Teacher", font, fntBrush, new PointF(width / 2 - 100, height / 2));
     }
+
+    private void addScore()
+    {
+        score += 1;
+        studentScores[dummyStudentId] = score;
+    }
+
     private void changeQuestionBackground(PaintEventArgs pevent)
     {
         var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
@@ -475,6 +485,7 @@ public class TuioDemo : Form, TuioListener
             {
                 responseMessage = "Ashter katkout";
                 screen = 2;
+                addScore();
             }
             else if (distance <= distanceThreshold && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865))
             {
