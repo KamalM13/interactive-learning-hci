@@ -31,6 +31,26 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing.Drawing2D;
+
+public class Student
+{
+    public int StudentId { get; set; }
+    public string Name { get; set; }
+
+    public int Tscore { get; set; }
+
+    public bool Attended { get; set; }
+
+    // Constructor
+    public Student(int studentId, string name)
+    {
+        StudentId = studentId;
+        Name = name;
+        Attended = false;
+        Tscore = 0;
+    }
+}
 
 public class TuioDemo : Form, TuioListener
 {
@@ -51,6 +71,7 @@ public class TuioDemo : Form, TuioListener
     private bool verbose;
 
     private static int screen = 1;
+    private static int QuestionNumber = 0;
     private string Question = "What is the capital of Egypt?";
     private string choiceOne = "Alex";
     private string choiceTwo = "Cairo";
@@ -65,6 +86,12 @@ public class TuioDemo : Form, TuioListener
     private static List<string> imagePaths = new List<string>();
     private static List<string> answers = new List<string>();
     private static List<string> bluetoothDevices = new List<string>();
+    private List<Student> students = new List<Student>
+    {
+    new Student(1, "John Doe") { Attended = true, Tscore = 3 },
+    new Student(2, "Jane Smith") { Attended = true, Tscore = 5 },
+    new Student(3, "Alex Brown") { Attended = false, Tscore = 0 }
+    };
 
     Font font = new Font("Arial", 10.0f);
     SolidBrush fntBrush = new SolidBrush(Color.White);
@@ -306,7 +333,7 @@ public class TuioDemo : Form, TuioListener
         Graphics g = pevent.Graphics;
         //g.FillRectangle(bgrBrush, new Rectangle(0, 0, width, height));
         g.DrawImage(Image.FromFile("home.jpg"), 0, 0, width, height);
-        changeQuestionBackground(pevent);
+
         SolidBrush c1Brush = new SolidBrush(Color.Red);
         SolidBrush c2Brush = new SolidBrush(Color.Green);
         SolidBrush c3Brush = new SolidBrush(Color.Blue);
@@ -322,7 +349,7 @@ public class TuioDemo : Form, TuioListener
 
         if (screen == 1) // 1 is the question screen
         {
-            drawScreenOne(pevent, g, c1Brush, c2Brush, c3Brush, c4Brush);
+            changeQuestionBackground(pevent, g, c1Brush, c2Brush, c3Brush, c4Brush);
             checkCollisonTrue();
         }
         else if (screen == 2) // 2 is the answer screen
@@ -337,76 +364,22 @@ public class TuioDemo : Form, TuioListener
         }
         else if (screen == 4)
         {
-            g.DrawString("hi", font, fntBrush, new PointF(width / 2 - 100, height / 2));
+            drawScreenFour(pevent, g, c1Brush, c2Brush, c3Brush, c4Brush);
             checkCollisonTrue();
         }
 
     }
 
-    private void drawScreenOne(PaintEventArgs pevent,
-        Graphics g,
-        SolidBrush c1Brush,
-        SolidBrush c2Brush,
-        SolidBrush c3Brush,
-        SolidBrush c4Brush)
+    private void drawScreenFour(PaintEventArgs pevent,
+    Graphics g,
+    SolidBrush brush1,
+    SolidBrush brush2,
+    SolidBrush brush3,
+    SolidBrush brush4)
     {
-        var tuioObject = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
-
-        if (tuioObject != null)
-        {
-            // Convert the angle to degrees for easier reading
-            float rotationAngleDegrees = (float)(tuioObject.Angle * (180.0 / Math.PI));
-
-            // Draw the angle text on the screen
-            g.DrawString("Angle: " + rotationAngleDegrees.ToString("0.0") + "�", font, fntBrush, new PointF(width / 2 - 100, height / 2 - 200));
-        }
-        if (objectList.Count > 0)
-        {
-            lock (objectList)
-            {
-                foreach (TuioObject tobj in objectList.Values)
-                {
-                    // Check if the TUIO object has SymbolID 1
-                    if (tobj.SymbolID == 1)
-                    {
-                        // Get position and angle of the TUIO object
-                        float ox = tobj.getScreenX(width);
-                        float oy = tobj.getScreenY(height);
-                        float angle = tobj.Angle; // Angle in radians
-
-                        // Draw the arrow at the object's position
-                        DrawArrow(pevent.Graphics, window_width / 2, window_height / 2, angle, 250); // Adjust size as needed
-                    }
-                }
-            }
-        }
-
-
-        // Draw the main "wheel" (central question)
-        g.FillEllipse(c1Brush, width / 2 - 100, height / 2 - 50, 200, 100); // Central circle for the question
-        if (questions.Count > 0)
-        {
-            g.DrawString(questions[0], font, fntBrush, new PointF((width - g.MeasureString(questions[0], font).Width) / 2, (height - g.MeasureString(questions[0], font).Height) / 2));
-        }
-
-        // Draw the four "choices" like wheel segments
-        g.FillEllipse(c1Brush, 20, 20, 100, 60);  // Top-left
-        g.FillEllipse(c2Brush, width - 120, 20, 100, 60);  // Top-right
-        g.FillEllipse(c3Brush, 20, height - 80, 100, 60);  // Bottom-left
-        g.FillEllipse(c4Brush, width - 120, height - 80, 100, 60);  // Bottom-right
-
-        // Draw the text on the ellipses for choices
-        if (answers.Count > 3)
-        {
-            g.DrawString(answers[0], font, fntBrush, new PointF(40, 40));  // Position for first choice
-            g.DrawString(answers[1], font, fntBrush, new PointF(width - g.MeasureString(answers[1], font).Width - 40, 40));  // Second choice
-            g.DrawString(answers[2], font, fntBrush, new PointF(40, height - g.MeasureString(answers[2], font).Height - 40));  // Third choice
-            g.DrawString(answers[3], font, fntBrush, new PointF(width - g.MeasureString(answers[3], font).Width - 40, height - g.MeasureString(choiceFour, font).Height - 40));  // Fourth choice
-        }
-
-
 
     }
+
 
     private void drawScreenTwo(Graphics g)
     {
@@ -431,43 +404,170 @@ public class TuioDemo : Form, TuioListener
     }
     private void drawScreenThree(Graphics g)
     {
-        g.DrawString("Hi Teacher", font, fntBrush, new PointF(width / 2 - 100, height / 2));
+        // Set the background color by filling the rectangle covering the entire screen
+        g.Clear(Color.LightBlue); // Change to any background color you prefer
+
+        // Draw a welcome message
+        g.DrawString("Hello, Teacher!", new Font("Arial", 24, FontStyle.Bold), Brushes.Black, new PointF(width / 2 - 100, 50));
+
+        // Draw the header for the table
+        g.FillRectangle(Brushes.DarkBlue, new Rectangle((int)(width / 2 - 150), 100, 300, 40));
+        g.DrawString("Name", new Font("Arial", 16, FontStyle.Bold), Brushes.White, new PointF(width / 2 - 140, 110));
+        g.DrawString("Score", new Font("Arial", 16, FontStyle.Bold), Brushes.White, new PointF(width / 2 + 50, 110));
+
+        // Variables for positioning the rows
+        float startX = width / 2 - 150;
+        float startY = 150;
+        float rowHeight = 30;
+        float rowWidth = 300;
+
+        // Draw table rows for each student who attended the quiz
+        foreach (var student in students)
+        {
+            if (student.Attended)
+            {
+                // Draw a rectangle for the current row
+                g.FillRectangle(Brushes.White, new Rectangle((int)startX, (int)startY, (int)rowWidth, (int)rowHeight));
+                g.DrawRectangle(Pens.Black, new Rectangle((int)startX, (int)startY, (int)rowWidth, (int)rowHeight));
+
+                // Draw student name and score
+                g.DrawString(student.Name, new Font("Arial", 14), Brushes.Black, new PointF(startX + 10, startY + 5));
+                g.DrawString(student.Tscore.ToString(), new Font("Arial", 14), Brushes.Black, new PointF(startX + 200, startY + 5));
+
+                // Move down for the next row
+                startY += rowHeight;
+            }
+        }
+
+        // Check for any collision detection logic if necessary
+        checkCollisonTrue();
     }
+
+
 
     private void addScore()
     {
         score += 1;
         studentScores[dummyStudentId] = score;
-        Debug.WriteLine("hi")
+        Debug.WriteLine("hi");
     }
 
-    private void changeQuestionBackground(PaintEventArgs pevent)
+    private void changeQuestionBackground(PaintEventArgs pevent,
+        Graphics g,
+        SolidBrush c1Brush,
+        SolidBrush c2Brush,
+        SolidBrush c3Brush,
+        SolidBrush c4Brush)
     {
+
+        Brush[] quadrantBrushes = { c1Brush, c2Brush, c3Brush, c4Brush };
+
+        // Dimensions for the quadrants
+        int midWidth = width / 2;
+        int midHeight = height / 2;
+
+        // Draw each quadrant
+        if (answers.Count >= 4)
+        {
+            for (int i = QuestionNumber * 4; i < QuestionNumber + 4; i++)
+            {
+                int x = (i % 2 == 0) ? 0 : midWidth; // Left or right half
+                int y = (i < 2) ? 0 : midHeight; // Top or bottom half
+
+                // Fill each quadrant with a different color
+                g.FillRectangle(quadrantBrushes[i], x, y, midWidth, midHeight);
+
+                // Draw the city name in the center of each quadrant
+                var cityFont = new Font("Arial", 24, FontStyle.Bold);
+                var textSize = g.MeasureString(answers[i], cityFont);
+                float textX = x + (midWidth - textSize.Width) / 2;
+                float textY = y + (midHeight - textSize.Height) / 2;
+                g.DrawString(answers[i], cityFont, Brushes.White, new PointF(textX, textY));
+            }
+        }
+
+        // Draw a box in the center for the question
+        int questionBoxWidth = 400;
+        int questionBoxHeight = 100;
+        int boxX = (width - questionBoxWidth) / 2;
+        int boxY = (height - questionBoxHeight) / 2;
+
+        ///////////
+
         var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
-        Graphics g = pevent.Graphics;
+
+
+
+
 
         if (marker1 != null)
         {
-            // Check if marker1's angle is within the range 5.23599 to 6.10865
-            if (marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865)
+            int x = 0;
+            int y = 0;
+
+            int i = QuestionNumber * 4;
+            if (marker1.Angle >= 4.7 && marker1.Angle <= 6.5)
             {
-                g.DrawImage(Image.FromFile("cairo.jpg"), 0, 0, width, height);
+                x = (1 % 2 == 0) ? 0 : midWidth; // Left or right halfKD
+                y = (1 < 2) ? 0 : midHeight; // Top or bottom half
+                g.DrawImage(Image.FromFile(imagePaths[i]), x, y, midWidth, midHeight);
             }
-            if (marker1.Angle >= 3.49066 && marker1.Angle <= 4.01426)
+
+
+            if (marker1.Angle >= 3.2 && marker1.Angle <= 4.687)
             {
-                g.DrawImage(Image.FromFile("aswan.jpg"), 0, 0, width, height);
+                x = (0 % 2 == 0) ? 0 : midWidth; // Left or right half
+                y = (0 < 2) ? 0 : midHeight; // Top or bottom half
+                g.DrawImage(Image.FromFile(imagePaths[i + 1]), x, y, midWidth, midHeight);
             }
-            if (marker1.Angle >= 2.0944 && marker1.Angle <= 2.61799)
+
+
+            if (marker1.Angle >= 1.6 && marker1.Angle <= 3.1)
             {
-                g.DrawImage(Image.FromFile("giza.jpg"), 0, 0, width, height);
+                x = (2 % 2 == 0) ? 0 : midWidth; // Left or right half
+                y = (2 < 2) ? 0 : midHeight; // Top or bottom half
+                g.DrawImage(Image.FromFile(imagePaths[i + 2]), x, y, midWidth, midHeight);
             }
-            if (marker1.Angle >= 0.436332 && marker1.Angle <= 0.959931)
+
+
+            if (marker1.Angle >= 0 && marker1.Angle <= 1.5)
             {
-                g.DrawImage(Image.FromFile("behira.jpg"), 0, 0, width, height);
+                x = (3 % 2 == 0) ? 0 : midWidth; // Left or right half
+                y = (3 < 2) ? 0 : midHeight; // Top or bottom half
+
+                g.DrawImage(Image.FromFile(imagePaths[i + 3]), x, y, midWidth, midHeight);
             }
+
+
 
             // Log or display the angle for debugging purposes
             Debug.WriteLine("Marker1 Angle: " + marker1.Angle);
+        }
+
+        var tuioObject = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
+        if (tuioObject != null)
+        {
+
+            // Get position and angle of the TUIO object
+            float ox = tuioObject.getScreenX(width);
+            float oy = tuioObject.getScreenY(height);
+            float angle = tuioObject.Angle; // Angle in radians
+
+            // Draw the arrow at the object's position
+            DrawArrow(pevent.Graphics, window_width / 2, window_height / 2, angle, 250); // Adjust size as needed
+        }
+
+        // Draw the question box with a border
+        g.FillRectangle(Brushes.White, boxX, boxY, questionBoxWidth, questionBoxHeight);
+        g.DrawRectangle(Pens.Black, boxX, boxY, questionBoxWidth, questionBoxHeight);
+        // Draw the question inside the box
+        if (questions.Count > 0)
+        {
+            var questionFont = new Font("Arial", 18, FontStyle.Bold);
+            var questionTextSize = g.MeasureString(questions[QuestionNumber], questionFont);
+            float questionTextX = boxX + (questionBoxWidth - questionTextSize.Width) / 2;
+            float questionTextY = boxY + (questionBoxHeight - questionTextSize.Height) / 2;
+            g.DrawString(questions[0], questionFont, Brushes.Black, new PointF(questionTextX, questionTextY));
         }
     }
 
