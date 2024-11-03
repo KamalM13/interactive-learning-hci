@@ -41,7 +41,7 @@ def send_data(connection, question, answers, image_paths, bluetooth_devices=[], 
         send_message(connection, f"BT:{addr},{name}")
     if gesture_data:
         send_message(connection, f"GESTURE:{gesture_data}")
-        #flag = True
+        flag = True
     print("All data sent.")
     return flag 
 
@@ -77,6 +77,7 @@ def start_client(queue):
             print(f"Connection failed: {e}")
             time.sleep(2)
         finally:
+            if flag: break
             client_socket.close()
 
 
@@ -86,7 +87,7 @@ def main():
     bluetooth_queue = queue.Queue()
     
     # Start the gesture recognition script
-    live="live_ges.py"
+    live="F:/Uni/4th year/Hci/project/interactive-learning-hci/python-sockets/live_ges.py"
     gesture_process = subprocess.Popen(["python", live])
 
     # Start the socket client in a separate thread

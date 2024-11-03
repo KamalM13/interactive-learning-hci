@@ -1,13 +1,13 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "F:\\Uni\\4th year\\Hci\\project\\interactive-learning-hci\\",
+  "WorkspaceRootPath": "E:\\MSA\\year4\\semster 1\\HCI\\project\\interactive-learning-hci\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|f:\\uni\\4th year\\hci\\project\\interactive-learning-hci\\tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|e:\\msa\\year4\\semster 1\\hci\\project\\interactive-learning-hci\\tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|solutionrelative:tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|f:\\uni\\4th year\\hci\\project\\interactive-learning-hci\\tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|E:\\MSA\\year4\\semster 1\\HCI\\project\\interactive-learning-hci\\tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|solutionrelative:tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     }
   ],
@@ -32,11 +32,11 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "TuioDemo.cs",
-              "DocumentMoniker": "F:\\Uni\\4th year\\Hci\\project\\interactive-learning-hci\\TuioDemo.cs",
+              "DocumentMoniker": "E:\\MSA\\year4\\semster 1\\HCI\\project\\interactive-learning-hci\\TuioDemo.cs",
               "RelativeDocumentMoniker": "TuioDemo.cs",
-              "ToolTip": "F:\\Uni\\4th year\\Hci\\project\\interactive-learning-hci\\TuioDemo.cs",
+              "ToolTip": "E:\\MSA\\year4\\semster 1\\HCI\\project\\interactive-learning-hci\\TuioDemo.cs",
               "RelativeToolTip": "TuioDemo.cs",
-              "ViewState": "AgIAACMAAAAAAAAAAAAUwDkAAAAZAAAAAAAAAA==",
+              "ViewState": "AgIAAB0AAAAAbmZmZqYowG0BAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-11-02T18:43:46.256Z",
               "EditorCaption": ""
@@ -45,13 +45,11 @@
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "TuioDemo.cs [Design]",
-              "DocumentMoniker": "F:\\Uni\\4th year\\Hci\\project\\interactive-learning-hci\\TuioDemo.cs",
+              "DocumentMoniker": "E:\\MSA\\year4\\semster 1\\HCI\\project\\interactive-learning-hci\\TuioDemo.cs",
               "RelativeDocumentMoniker": "TuioDemo.cs",
               "ToolTip": "F:\\Uni\\4th year\\Hci\\project\\interactive-learning-hci\\TuioDemo.cs [Design]",
-              "RelativeToolTip": "TuioDemo.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-02T18:43:43.664Z",
-              "EditorCaption": " [Design]"
+              "WhenOpened": "2024-11-02T18:43:43.664Z"
             }
           ]
         }

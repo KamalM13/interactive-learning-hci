@@ -46,11 +46,11 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 try:
                     s.connect(('localhost', 12345))
-                    s.sendall(f"GESTURE:{best_gesture}:{best_score:.2f}".encode('utf-8'))
+                    s.sendall(f"GESTURE:{best_gesture}".encode('utf-8'))
                 except Exception as e:
                     print("Error sending gesture data:", e)
 
-        cv2.imshow('Output', annotated_image)
+        cv2.imshow('Guestures cam', annotated_image)
         if cv2.waitKey(1) == ord('q'):
             break
 
