@@ -438,6 +438,7 @@ public class TuioDemo : Form, TuioListener
     {
         score += 1;
         studentScores[dummyStudentId] = score;
+        Debug.WriteLine("hi")
     }
 
     private void changeQuestionBackground(PaintEventArgs pevent)
