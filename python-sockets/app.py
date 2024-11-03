@@ -4,7 +4,7 @@ import struct
 import threading
 import queue
 from queue import Empty
-#import bluetooth
+import bluetooth
 import subprocess
 
 def scan_bluetooth_devices(queue):
@@ -13,9 +13,9 @@ def scan_bluetooth_devices(queue):
     while True:
         try:
             # Discover nearby Bluetooth devices
-            #nearby_devices = bluetooth.discover_devices(lookup_names=True)
+            nearby_devices = bluetooth.discover_devices(lookup_names=True)
             # Add the latest scan results to the queue
-            #queue.put(nearby_devices)
+            queue.put(nearby_devices)
             # Short delay before the next scan to avoid excessive looping
             time.sleep(1)
 
@@ -39,11 +39,12 @@ def send_data(connection, question, answers, image_paths, bluetooth_devices=[], 
         send_message(connection, f"IMG:{img_path}")
     for addr, name in bluetooth_devices:
         send_message(connection, f"BT:{addr},{name}")
+        flag = True
     if gesture_data:
         send_message(connection, f"GESTURE:{gesture_data}")
-    flag = True
+        #flag = True
     print("All data sent.")
-    return flag
+    #return flag 
 
 def run_gesture_detection():
     # Run your gesture detection script
@@ -64,21 +65,21 @@ def start_client(queue):
             client_socket.connect(("localhost", 12345))
 
             # Define the question, answers, and image paths
-            question = "What is the capital of Egypt?"
-            answers = ["Aswan", "Cairo", "Giza", "Behira"]
-            image_paths = ["cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg"]
-            flag = True
+            question = ["What is the capital of Egypt?", "What animal lays eggs?"]
+            answers = ["Aswan", "Cairo", "Giza", "Behira", "Chicken", "Cow", "Dog", "Fox"]
+            image_paths = ["cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg", "chicken.jpg", "cow.jpg","dog.jpg","fox.jpg"]
+            flag = False
             # Continuously listen for new Bluetooth devices in the queue
             while True:
                 try:
                     # Attempt to get Bluetooth devices without blocking
                     bluetooth_devices = queue.get_nowait()
                     # Send data with the latest Bluetooth information
-                    send_data(
+                    flag = send_data(
                         client_socket, question, answers, image_paths, bluetooth_devices, flag
                     )
                 except Empty:
-                    if(flag): break
+                    #if(flag): break
                     # Queue is empty, proceed without sending Bluetooth data
                     send_data(client_socket, question, answers, image_paths)
                 # Short delay to prevent tight-looping
@@ -87,7 +88,7 @@ def start_client(queue):
             print(f"Connection failed: {e}")
             time.sleep(2)
         finally:
-            if flag: break
+            #if flag: break
             client_socket.close()
 
 
