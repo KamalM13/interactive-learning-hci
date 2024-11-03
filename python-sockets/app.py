@@ -41,7 +41,7 @@ def send_data(connection, question, answers, image_paths, bluetooth_devices=[], 
         send_message(connection, f"BT:{addr},{name}")
     if gesture_data:
         send_message(connection, f"GESTURE:{gesture_data}")
-        flag = True
+        #flag = True
     print("All data sent.")
     return flag 
 
