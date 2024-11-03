@@ -65,6 +65,7 @@ public class TuioDemo : Form, TuioListener
     private static List<string> imagePaths = new List<string>();
     private static List<string> answers = new List<string>();
     private static List<string> bluetoothDevices = new List<string>();
+    private static List<string> guesture = new List<string>();
 
     Font font = new Font("Arial", 10.0f);
     SolidBrush fntBrush = new SolidBrush(Color.White);
@@ -73,6 +74,8 @@ public class TuioDemo : Form, TuioListener
     SolidBrush objBrush = new SolidBrush(Color.FromArgb(64, 0, 0));
     SolidBrush blbBrush = new SolidBrush(Color.FromArgb(64, 64, 64));
     Pen curPen = new Pen(new SolidBrush(Color.Blue), 1);
+
+    public static object marker1 { get; private set; }
 
     public TuioDemo(int port)
     {
@@ -466,7 +469,7 @@ public class TuioDemo : Form, TuioListener
             }
 
             // Log or display the angle for debugging purposes
-            Debug.WriteLine("Marker1 Angle: " + marker1.Angle);
+            //Debug.WriteLine("Marker1 Angle: " + marker1.Angle);
         }
     }
 
@@ -501,6 +504,34 @@ public class TuioDemo : Form, TuioListener
                 screen = 2;
             }
         }
+
+        if (guesture.Count > 0 && marker1 != null) 
+        {
+            
+            if (guesture[guesture.Count - 1] == "ok" && marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865)
+            {
+                responseMessage = "Ashter katkout";
+                screen = 2;
+                addScore();
+            }
+            else if (guesture[guesture.Count - 1] == "ok" && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865))
+            {
+                responseMessage = "Try again";
+                screen = 2;
+            }
+            if (guesture[guesture.Count - 1] == "stop")
+            {
+                responseMessage = "you left the party";
+            }
+        }
+        if (guesture.Count > 0)
+        {
+            if (guesture[guesture.Count - 1] == "stop")
+            {
+                responseMessage = "you left the party";
+            }
+        }
+
         var marker2 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 2); // navigation TUIO
         float thresholdSpeed = 0.01f;
         if (marker2 != null)
@@ -515,6 +546,22 @@ public class TuioDemo : Form, TuioListener
                     screen = 1;
             }
             if (marker2.RotationSpeed < -7)
+            {
+                screen -= 1;
+                if (screen < 1)
+                    screen = 4;
+            }
+
+        }
+        if (guesture.Count > 0)
+        {
+            if (guesture[guesture.Count - 1]=="next")
+            {
+                screen += 1;
+                if (screen > 4)
+                    screen = 1;
+            }
+            if (guesture[guesture.Count - 1] == "previous")
             {
                 screen -= 1;
                 if (screen < 1)
@@ -596,6 +643,12 @@ public class TuioDemo : Form, TuioListener
                     string device = message.Substring(3, 17);
                     bluetoothDevices.Add(device);
                     Debug.WriteLine("Bluetooth Device " + bluetoothDevices.Count + ": " + device);
+                }
+                if (message.StartsWith("URE:"))
+                {
+                    string device = message.Substring(4);
+                    guesture.Add(device);
+                    Debug.WriteLine("guesture is " + guesture.Count + ": " + device);
                 }
             }
         }
