@@ -5,7 +5,7 @@ import socket
 from dollarpy import Recognizer, Point
 
 # Load gesture templates
-with open("F:/Uni/4th year/Hci/project/interactive-learning-hci/python-sockets/gesture_templates.pkl", "rb") as f:
+with open("gesture_templates.pkl", "rb") as f:
     templates = pickle.load(f)
 
 recognizer = Recognizer(templates)

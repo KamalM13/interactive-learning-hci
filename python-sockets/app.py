@@ -77,7 +77,6 @@ def start_client(queue):
             print(f"Connection failed: {e}")
             time.sleep(2)
         finally:
-            if flag: break
             client_socket.close()
 
 
@@ -87,7 +86,7 @@ def main():
     bluetooth_queue = queue.Queue()
     
     # Start the gesture recognition script
-    live="F:/Uni/4th year/Hci/project/interactive-learning-hci/python-sockets/live_ges.py"
+    live="live_ges.py"
     gesture_process = subprocess.Popen(["python", live])
 
     # Start the socket client in a separate thread

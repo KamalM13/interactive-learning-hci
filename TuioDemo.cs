@@ -50,7 +50,7 @@ public class TuioDemo : Form, TuioListener
     private bool fullscreen;
     private bool verbose;
 
-    private static int screen = 1;
+    private static int screen =5;
     private string Question = "What is the capital of Egypt?";
     private string choiceOne = "Alex";
     private string choiceTwo = "Cairo";
@@ -60,6 +60,7 @@ public class TuioDemo : Form, TuioListener
     private int score = 0;
     private Dictionary<string, int> studentScores = new Dictionary<string, int>();
     private string dummyStudentId = "123";
+    private int tuioId; // Assuming tuioId is an integer representing the TUIO ID
 
     private static List<string> questions = new List<string>();
     private static List<string> imagePaths = new List<string>();
@@ -340,7 +341,69 @@ public class TuioDemo : Form, TuioListener
             g.DrawString("hi", font, fntBrush, new PointF(width / 2 - 100, height / 2));
             checkCollisonTrue();
         }
+        else if (screen == 5)
+        {
+            DrawWelcomeScreen(g, pevent);
+           
+            checkCollisonTrue();
+        }
+    }
+    private void DrawWelcomeScreen(Graphics g, PaintEventArgs pevent)
+    {
+        // Set background color to purple
+        g.Clear(Color.Purple);
 
+        // Set text properties
+        string welcomeText = "Please show your ID code";
+        Font font = new Font("Arial", 24, FontStyle.Bold);
+        Brush textBrush = Brushes.Black;
+
+        // Measure and draw text in the center of the screen
+        SizeF textSize = g.MeasureString(welcomeText, font);
+        float x = (this.ClientSize.Width - textSize.Width) / 2;
+        float y = (this.ClientSize.Height - textSize.Height) / 2;
+        g.DrawString(welcomeText, font, textBrush, x, y);
+
+        // If you need to use tuioId here, you can access it since it's a class member
+        // e.g., g.DrawString("TUIO ID: " + tuioId.ToString(), font, textBrush, new PointF(x, y + 30));
+
+        // Ensure tuioId is set correctly before calling this method
+        // TuioInputReceived(pevent, tuioId); // This might not be necessary here
+    }
+
+    private void TuioInputReceived(PaintEventArgs pevent, int tuioId)
+    {
+        this.tuioId = tuioId; // Store the received TUIO ID in the class property
+        Graphics g = pevent.Graphics;
+
+        // Clear previous drawing and redraw the background image
+        g.DrawImage(Image.FromFile("home.jpg"), 0, 0, width, height);
+        changeQuestionBackground(pevent);
+
+        // SolidBrushes remain the same
+        SolidBrush c1Brush = new SolidBrush(Color.Red);
+        SolidBrush c2Brush = new SolidBrush(Color.Green);
+        SolidBrush c3Brush = new SolidBrush(Color.Blue);
+        SolidBrush c4Brush = new SolidBrush(Color.Olive);
+
+        // Handle TUIO input: switch screens based on TUIO ID
+        if (tuioId == 10)
+        {
+
+            drawScreenTwo(g);
+            checkCollisonTrue();
+            screen = 1;
+
+        }
+        else if (tuioId == 11)
+        {
+            drawScreenThree(g);
+            checkCollisonTrue(); // Switch to teacher screen
+            screen = 3;
+        }
+
+        // Refresh the form to update the screen
+        this.Invalidate();
     }
 
     private void drawScreenOne(PaintEventArgs pevent,
@@ -429,6 +492,7 @@ public class TuioDemo : Form, TuioListener
         }
         checkCollisonTrue();
     }
+
     private void drawScreenThree(Graphics g)
     {
         g.DrawString("Hi Teacher", font, fntBrush, new PointF(width / 2 - 100, height / 2));
@@ -438,7 +502,7 @@ public class TuioDemo : Form, TuioListener
     {
         score += 1;
         studentScores[dummyStudentId] = score;
-        Debug.WriteLine("hi")
+        Debug.WriteLine("hi");
     }
 
     private void changeQuestionBackground(PaintEventArgs pevent)
@@ -524,7 +588,7 @@ public class TuioDemo : Form, TuioListener
 
         }
     }
-
+    
     private void InitializeComponent()
     {
         this.SuspendLayout();
