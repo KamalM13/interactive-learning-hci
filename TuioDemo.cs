@@ -81,7 +81,6 @@ public class TuioDemo : Form, TuioListener
     private int score = 0;
     private Dictionary<string, int> studentScores = new Dictionary<string, int>();
     private string dummyStudentId = "123";
-    private int tuioId; // Assuming tuioId is an integer representing the TUIO ID
 
     private static List<string> questions = new List<string>();
     private static List<string> imagePaths = new List<string>();
@@ -468,7 +467,6 @@ public class TuioDemo : Form, TuioListener
         }
         checkCollisonTrue();
     }
-
     private void drawScreenThree(Graphics g)
     {
         // Set the background color by filling the rectangle covering the entire screen
@@ -516,7 +514,7 @@ public class TuioDemo : Form, TuioListener
     {
         score += 1;
         studentScores[dummyStudentId] = score;
-        Debug.WriteLine("hi");
+        Debug.WriteLine("hi")
     }
 
     private void changeQuestionBackground(PaintEventArgs pevent,
@@ -735,7 +733,7 @@ public class TuioDemo : Form, TuioListener
 
         }
     }
-    
+
     private void InitializeComponent()
     {
         this.SuspendLayout();
