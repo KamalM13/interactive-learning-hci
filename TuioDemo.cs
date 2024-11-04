@@ -70,7 +70,7 @@ public class TuioDemo : Form, TuioListener
     private bool fullscreen;
     private bool verbose;
     private static List<string> guesture = new List<string>();
-    private static int screen =5;
+    private static int screen =1;
     private static int QuestionNumber = 0;
     private string Question = "What is the capital of Egypt?";
     private string choiceOne = "Alex";
@@ -351,6 +351,7 @@ public class TuioDemo : Form, TuioListener
 
         if (screen == 1) // 1 is the question screen
         {
+            checkCollisonTrue();
             changeQuestionBackground(pevent, g, c1Brush, c2Brush, c3Brush, c4Brush);
             checkCollisonTrue();
         }
@@ -531,16 +532,19 @@ public class TuioDemo : Form, TuioListener
         int midWidth = width / 2;
         int midHeight = height / 2;
 
-        // Draw each quadrant
+        //// Draw each quadrant
+
         if (answers.Count >= 4)
         {
+            int ii = 0;
             for (int i = QuestionNumber * 4; i < QuestionNumber + 4; i++)
             {
                 int x = (i % 2 == 0) ? 0 : midWidth; // Left or right half
                 int y = (i < 2) ? 0 : midHeight; // Top or bottom half
 
                 // Fill each quadrant with a different color
-                g.FillRectangle(quadrantBrushes[i], x, y, midWidth, midHeight);
+                g.FillRectangle(quadrantBrushes[ii], x, y, midWidth, midHeight);
+                ii++;
 
                 // Draw the city name in the center of each quadrant
                 var cityFont = new Font("Arial", 24, FontStyle.Bold);
@@ -626,13 +630,14 @@ public class TuioDemo : Form, TuioListener
         g.FillRectangle(Brushes.White, boxX, boxY, questionBoxWidth, questionBoxHeight);
         g.DrawRectangle(Pens.Black, boxX, boxY, questionBoxWidth, questionBoxHeight);
         // Draw the question inside the box
+
         if (questions.Count > 0)
         {
             var questionFont = new Font("Arial", 18, FontStyle.Bold);
             var questionTextSize = g.MeasureString(questions[QuestionNumber], questionFont);
             float questionTextX = boxX + (questionBoxWidth - questionTextSize.Width) / 2;
             float questionTextY = boxY + (questionBoxHeight - questionTextSize.Height) / 2;
-            g.DrawString(questions[0], questionFont, Brushes.Black, new PointF(questionTextX, questionTextY));
+            g.DrawString(questions[QuestionNumber], questionFont, Brushes.Black, new PointF(questionTextX, questionTextY));
         }
     }
 
@@ -704,15 +709,15 @@ public class TuioDemo : Form, TuioListener
             // Check if it's on the right half and movement exceeds the threshold
             if (marker2.RotationSpeed > 7)
             {
-                screen += 1;
-                if (screen > 4)
-                    screen = 1;
+                QuestionNumber += 1;
+                if (QuestionNumber > questions.Count)
+                    QuestionNumber = 0;
             }
             if (marker2.RotationSpeed < -7)
             {
-                screen -= 1;
-                if (screen < 1)
-                    screen = 4;
+                QuestionNumber -= 1;
+                if (QuestionNumber < 0)
+                    QuestionNumber = questions.Count-1; 
             }
 
         }
@@ -720,15 +725,15 @@ public class TuioDemo : Form, TuioListener
         {
             if (guesture[guesture.Count - 1]=="next")
             {
-                screen += 1;
-                if (screen > 4)
-                    screen = 1;
+                QuestionNumber += 1;
+                if (QuestionNumber > questions.Count)
+                    QuestionNumber = 0;
             }
             if (guesture[guesture.Count - 1] == "previous")
             {
-                screen -= 1;
-                if (screen < 1)
-                    screen = 4;
+                QuestionNumber -= 1;
+                if (QuestionNumber < 0)
+                    QuestionNumber = questions.Count - 1;
             }
 
         }
@@ -786,20 +791,29 @@ public class TuioDemo : Form, TuioListener
                 if (message.StartsWith("Q:"))
                 {
                     string question = message.Substring(2);
-                    questions.Add(question);
-                    Debug.WriteLine("Question: " + question);
+                    if (!questions.Contains(question))
+                    {
+                        questions.Add(question);
+                        Debug.WriteLine("Question: " + question);
+                    }
                 }
                 else if (message.StartsWith("A:"))
                 {
                     string answer = message.Substring(2);
-                    answers.Add(answer);
-                    Debug.WriteLine("Answer " + answers.Count + ": " + answer);
+                    if (!answers.Contains(answer))
+                    {
+                        answers.Add(answer);
+                        Debug.WriteLine("Answer " + answers.Count % 4 + ": " + answer);
+                    } 
                 }
                 else if (message.StartsWith("IMG:"))
                 {
                     string imagePath = message.Substring(4);
-                    imagePaths.Add(imagePath);
-                    Debug.WriteLine("Image Path " + imagePaths.Count + ": " + imagePath);
+                    if (!imagePaths.Contains(imagePath))
+                    {
+                        imagePaths.Add(imagePath);
+                        Debug.WriteLine("Image Path " + imagePaths.Count % 4+ ": " + imagePath);
+                    }
                 }
                 else if (message.StartsWith("BT:"))
                 {
