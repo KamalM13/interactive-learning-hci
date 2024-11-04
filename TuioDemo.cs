@@ -401,7 +401,7 @@ public class TuioDemo : Form, TuioListener
 
     private void TuioInputReceived(PaintEventArgs pevent, int tuioId)
     {
-        this.tuioId = tuioId; // Store the received TUIO ID in the class property
+        //this.tuioId = tuioId; // Store the received TUIO ID in the class property
         Graphics g = pevent.Graphics;
 
         // Clear previous drawing and redraw the background image
@@ -514,7 +514,7 @@ public class TuioDemo : Form, TuioListener
     {
         score += 1;
         studentScores[dummyStudentId] = score;
-        Debug.WriteLine("hi")
+        Debug.WriteLine("hi");
     }
 
     private void changeQuestionBackground(PaintEventArgs pevent,

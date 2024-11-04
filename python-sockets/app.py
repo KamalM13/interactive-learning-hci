@@ -54,9 +54,9 @@ def start_client(queue):
             client_socket.connect(("localhost", 12345))
 
             # Define the question, answers, and image paths
-            question = "What is the capital of Egypt?"
-            answers = ["Aswan", "Cairo", "Giza", "Behira"]
-            image_paths = ["cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg"]
+            question = ["What is the capital of Egypt?", "What animal lays eggs?"]
+            answers = ["Aswan", "Cairo", "Giza", "Behira", "Chicken", "Cow", "Fox", "Dog"]
+            image_paths = ["cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg", "chicken.jpg", "cow.jpg", "fox.jpg", "dog.jpg"]
             flag = True
             # Continuously listen for new Bluetooth devices in the queue
             while True:
@@ -94,12 +94,12 @@ def main():
     bluetooth_queue = queue.Queue()
     
     # Start the gesture recognition script
-    gesture_thread = threading.Thread(target=run_gesture_detection)
-    reactivision_thread = threading.Thread(target=run_reactivision)
-    gesture_thread.start()
-    reactivision_thread.start()
-    gesture_thread.join()
-    reactivision_thread.join()
+    # gesture_thread = threading.Thread(target=run_gesture_detection)
+    # reactivision_thread = threading.Thread(target=run_reactivision)
+    # gesture_thread.start()
+    # reactivision_thread.start()
+    # gesture_thread.join()
+    # reactivision_thread.join()
 
     # Start the socket client in a separate thread
     client_thread = threading.Thread(target=start_client, args=(bluetooth_queue,))
