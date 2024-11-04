@@ -4,7 +4,7 @@ import struct
 import threading
 import queue
 from queue import Empty
-#import bluetooth
+import bluetooth
 import subprocess
 
 def scan_bluetooth_devices(queue):
@@ -13,9 +13,9 @@ def scan_bluetooth_devices(queue):
     while True:
         try:
             # Discover nearby Bluetooth devices
-            #nearby_devices = bluetooth.discover_devices(lookup_names=True)
+            nearby_devices = bluetooth.discover_devices(lookup_names=True)
             # Add the latest scan results to the queue
-            #queue.put(nearby_devices)
+            queue.put(nearby_devices)
             # Short delay before the next scan to avoid excessive looping
             time.sleep(1)
 
@@ -80,15 +80,26 @@ def start_client(queue):
             if flag: break
             client_socket.close()
 
-
+def run_gesture_detection():
+    # Run your gesture detection script
+    gesture_script = "F:/Uni/4th year/Hci/project/interactive-learning-hci/python-sockets/live_ges.py"
+    subprocess.Popen(["python", gesture_script])
+def run_reactivision():
+    # Assuming reacTIVision is an executable or script
+    reactivision_executable = "F:/Uni/4th year/Hci/lab/Lab 2 - TUIO + GUI-20241020/reacTIVision-1.5.1-win64/reacTIVision.exe"
+    subprocess.Popen([reactivision_executable]) 
 
 def main():
     # Queue for sharing data between Bluetooth scanning and client sending
     bluetooth_queue = queue.Queue()
     
     # Start the gesture recognition script
-    live="F:/Uni/4th year/Hci/project/interactive-learning-hci/python-sockets/live_ges.py"
-    gesture_process = subprocess.Popen(["python", live])
+    gesture_thread = threading.Thread(target=run_gesture_detection)
+    reactivision_thread = threading.Thread(target=run_reactivision)
+    gesture_thread.start()
+    reactivision_thread.start()
+    gesture_thread.join()
+    reactivision_thread.join()
 
     # Start the socket client in a separate thread
     client_thread = threading.Thread(target=start_client, args=(bluetooth_queue,))

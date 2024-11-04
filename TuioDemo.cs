@@ -69,13 +69,9 @@ public class TuioDemo : Form, TuioListener
 
     private bool fullscreen;
     private bool verbose;
-
-<<<<<<< HEAD
+    private static List<string> guesture = new List<string>();
     private static int screen =5;
-=======
-    private static int screen = 1;
     private static int QuestionNumber = 0;
->>>>>>> 2802522f1a92a7b6822386f9d7ce7aec74da9354
     private string Question = "What is the capital of Egypt?";
     private string choiceOne = "Alex";
     private string choiceTwo = "Cairo";
@@ -411,13 +407,14 @@ public class TuioDemo : Form, TuioListener
 
         // Clear previous drawing and redraw the background image
         g.DrawImage(Image.FromFile("home.jpg"), 0, 0, width, height);
-        changeQuestionBackground(pevent);
+        
 
         // SolidBrushes remain the same
         SolidBrush c1Brush = new SolidBrush(Color.Red);
         SolidBrush c2Brush = new SolidBrush(Color.Green);
         SolidBrush c3Brush = new SolidBrush(Color.Blue);
         SolidBrush c4Brush = new SolidBrush(Color.Olive);
+        changeQuestionBackground(pevent, g, c1Brush, c2Brush, c3Brush, c4Brush);
 
         // Handle TUIO input: switch screens based on TUIO ID
         if (tuioId == 10)
