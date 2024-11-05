@@ -17,7 +17,7 @@ def landmarks_to_points(landmarks):
     return [Point(lm.x, lm.y) for lm in landmarks.landmark]
 
 # Initialize video capture and holistic model
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
     while cap.isOpened():

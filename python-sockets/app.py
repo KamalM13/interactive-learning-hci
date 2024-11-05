@@ -95,12 +95,12 @@ def main():
     bluetooth_queue = queue.Queue()
     
     # Start the gesture recognition script
-    # gesture_thread = threading.Thread(target=run_gesture_detection)
-    # reactivision_thread = threading.Thread(target=run_reactivision)
-    # gesture_thread.start()
-    # reactivision_thread.start()
-    # gesture_thread.join()
-    # reactivision_thread.join()
+    gesture_thread = threading.Thread(target=run_gesture_detection)
+    reactivision_thread = threading.Thread(target=run_reactivision)
+    gesture_thread.start()
+    reactivision_thread.start()
+    gesture_thread.join()
+    reactivision_thread.join()
 
     # Start the socket client in a separate thread
     client_thread = threading.Thread(target=start_client, args=(bluetooth_queue,))
@@ -113,11 +113,8 @@ def main():
     bluetooth_thread.start()
 
     # # Wait for threads to complete
-    # bluetooth_thread.join()
+    #bluetooth_thread.join()
     client_thread.join()
-    # Optionally, wait for the gesture process to complete
-    #gesture_process.wait()  # This will wait for live_ges.py to finish if needed
-
 
 if __name__ == "__main__":
     try:

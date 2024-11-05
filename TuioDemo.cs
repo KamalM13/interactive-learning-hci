@@ -33,6 +33,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing.Drawing2D;
 using System.IO;
+using System.Timers;
 
 public class Student
 {
@@ -60,6 +61,8 @@ public class TuioDemo : Form, TuioListener
     private Dictionary<long, TuioCursor> cursorList;
     private Dictionary<long, TuioBlob> blobList;
 
+    private static System.Timers.Timer gestureTimer = new System.Timers.Timer(1000);
+
     public static int width, height;
     private int window_width = 640;
     private int window_height = 480;
@@ -70,7 +73,7 @@ public class TuioDemo : Form, TuioListener
 
     private bool fullscreen;
     private bool verbose;
-    private static List<string> guesture = new List<string>();
+    private static List<string> gesture = new List<string>();
     private static int screen = 1;
     private static int QuestionNumber = 0;
     private string Question = "What is the capital of Egypt?";
@@ -233,7 +236,7 @@ public class TuioDemo : Form, TuioListener
     public void updateTuioObject(TuioObject o)
     {
 
-        if (verbose) Console.WriteLine("set obj " + o.SymbolID + " " + o.SessionID + " " + o.X + " " + o.Y + " " + o.Angle + " " + o.MotionSpeed + " " + o.RotationSpeed + " " + o.MotionAccel + " " + o.RotationAccel);
+        //if (verbose) Console.WriteLine("set obj " + o.SymbolID + " " + o.SessionID + " " + o.X + " " + o.Y + " " + o.Angle + " " + o.MotionSpeed + " " + o.RotationSpeed + " " + o.MotionAccel + " " + o.RotationAccel);
     }
 
     public void removeTuioObject(TuioObject o)
@@ -664,7 +667,7 @@ public class TuioDemo : Form, TuioListener
 
 
             // Log or display the angle for debugging purposes
-            Debug.WriteLine("Marker1 Angle: " + marker1.Angle);
+            //Debug.WriteLine("Marker1 Angle: " + marker1.Angle);
         }
 
         var tuioObject = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
@@ -733,7 +736,7 @@ public class TuioDemo : Form, TuioListener
         {
             // Calculate the Euclidean distance between the two markers
             double distance = Math.Sqrt(Math.Pow(marker1.X - marker4.X, 2) + Math.Pow(marker1.Y - marker4.Y, 2));
-            Debug.WriteLine("Distance: " + distance);
+            //Debug.WriteLine("Distance: " + distance);
 
 
             if (distance >= distanceThreshold)
@@ -753,43 +756,43 @@ public class TuioDemo : Form, TuioListener
             }
         }
 
-        if (guesture.Count > 0 && marker1 != null) 
+        if (gesture.Count > 0 && marker1 != null) 
         {
             
-            if (guesture[guesture.Count - 1] == "ok" && marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865)
+            if (gesture[gesture.Count - 1] == "ok" && marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865)
             {
                 responseMessage = "Ashter katkout";
                 screen = 2;
                 addScore();
             }
-            else if (guesture[guesture.Count - 1] == "ok" && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865))
+            else if (gesture[gesture.Count - 1] == "ok" && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865))
             {
                 responseMessage = "Try again";
                 screen = 2;
             }
-            if (guesture[guesture.Count - 1] == "stop")
+            if (gesture[gesture.Count - 1] == "stop")
             {
                 responseMessage = "you left the party";
             }
         }
-        if (guesture.Count > 0)
+        if (gesture.Count > 0)
         {
-            if (guesture[guesture.Count - 1] == "stop")
+            if (gesture[gesture.Count - 1] == "stop")
             {
                 responseMessage = "you left the party";
             }
         }
 
         
-        if (guesture.Count > 0)
+        if (gesture.Count > 0)
         {
-            if (guesture[guesture.Count - 1]=="next")
+            if (gesture[gesture.Count - 1]=="next")
             {
                 QuestionNumber += 1;
                 if (QuestionNumber > questions.Count)
                     QuestionNumber = 0;
             }
-            if (guesture[guesture.Count - 1] == "previous")
+            if (gesture[gesture.Count - 1] == "previous")
             {
                 QuestionNumber -= 1;
                 if (QuestionNumber < 0)
@@ -833,12 +836,32 @@ public class TuioDemo : Form, TuioListener
 
     }
 
+    public static void StartGestureListener()
+    {
+        // Configure a timer to check for gestures every few seconds.
+        gestureTimer = new System.Timers.Timer(200); // Use System.Timers.Timer explicitly
+        gestureTimer.Elapsed += OnGestureTimeout;
+        gestureTimer.AutoReset = true; // Timer will reset after each elapsed event
+        gestureTimer.Enabled = true;
+        Debug.WriteLine("timerrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
+    }
+
+    private static void OnGestureTimeout(object sender, ElapsedEventArgs e)
+    {
+        // If there is a gesture in the list and no new message has been received, clear it.
+        if (gesture.Count > 0)
+        {
+            gesture.Clear();
+            Debug.WriteLine("Gesture list cleared due to timeout.");
+        }
+    }
     private static async Task ProcessClientAsync(TcpClient client)
     {
         using (NetworkStream stream = client.GetStream())
         {
             while (client.Connected)  // Continuous loop for real-time handling
             {
+                
                 string message = await ReadMessageAsync(stream);
                 if (message == null)
                 {
@@ -854,7 +877,7 @@ public class TuioDemo : Form, TuioListener
                     if (!questions.Contains(question))
                     {
                         questions.Add(question);
-                        Debug.WriteLine("Question: " + question);
+                        //Debug.WriteLine("Question: " + question);
                     }
                 }
                 else if (message.StartsWith("A:"))
@@ -863,7 +886,7 @@ public class TuioDemo : Form, TuioListener
                     if (!answers.Contains(answer))
                     {
                         answers.Add(answer);
-                        Debug.WriteLine("Answer " + answers.Count % 4 + ": " + answer);
+                        //Debug.WriteLine("Answer " + answers.Count % 4 + ": " + answer);
                     } 
                 }
                 else if (message.StartsWith("IMG:"))
@@ -872,20 +895,25 @@ public class TuioDemo : Form, TuioListener
                     if (!imagePaths.Contains(imagePath))
                     {
                         imagePaths.Add(imagePath);
-                        Debug.WriteLine("Image Path " + imagePaths.Count % 4+ ": " + imagePath);
+                        //Debug.WriteLine("Image Path " + imagePaths.Count % 4+ ": " + imagePath);
                     }
                 }
                 else if (message.StartsWith("BT:"))
                 {
                     string device = message.Substring(3, 17);
                     bluetoothDevices.Add(device);
-                    Debug.WriteLine("Bluetooth Device " + bluetoothDevices.Count + ": " + device);
+                    //Debug.WriteLine("Bluetooth Device " + bluetoothDevices.Count + ": " + device);
+                }
+                if (gestureTimer != null)
+                {
+                    gestureTimer.Stop();
                 }
                 if (message.StartsWith("URE:"))
                 {
                     string device = message.Substring(4);
-                    guesture.Add(device);
-                    Debug.WriteLine("guesture is " + guesture.Count + ": " + device);
+                    gesture.Add(device);
+                    StartGestureListener();
+                    Debug.WriteLine("gesture is " + gesture.Count + ": " + device);
                 }
             }
         }
@@ -910,6 +938,7 @@ public class TuioDemo : Form, TuioListener
     public static void Main(string[] argv)
     {
         int port = 0;
+        
         switch (argv.Length)
         {
             case 1:
