@@ -71,7 +71,7 @@ public class TuioDemo : Form, TuioListener
     private bool fullscreen;
     private bool verbose;
     private static List<string> guesture = new List<string>();
-    private static int screen =5;
+    private static int screen = 1;
     private static int QuestionNumber = 0;
     private string Question = "What is the capital of Egypt?";
     private string choiceOne = "Alex";
@@ -242,14 +242,6 @@ public class TuioDemo : Form, TuioListener
         {
             objectList.Remove(o.SessionID);
         }
-
-        // Reset the message if one of the objects is removed
-        if (!objectList.Values.Any(obj => obj.SymbolID == 1) ||
-            !objectList.Values.Any(obj => obj.SymbolID == 4))
-        {
-            responseMessage = Question;  // Reset to welcome message
-            screen = 1;
-        }
     }
 
     public void addTuioCursor(TuioCursor c)
@@ -374,9 +366,9 @@ public class TuioDemo : Form, TuioListener
         else if (screen == 5)
         {
             DrawWelcomeScreen(g, pevent);
-           
             checkCollisonTrue();
         }
+        checkNavigation();
     }
     private void DrawWelcomeScreen(Graphics g, PaintEventArgs pevent)
     {
@@ -484,7 +476,7 @@ public class TuioDemo : Form, TuioListener
 
             drawScreenTwo(g);
             checkCollisonTrue();
-            screen = 1;
+            //screen = 1;
 
         }
         else if (tuioId == 11)
@@ -702,9 +694,35 @@ public class TuioDemo : Form, TuioListener
             g.DrawString(questions[QuestionNumber], questionFont, Brushes.Black, new PointF(questionTextX, questionTextY));
         }
     }
+    private void checkNavigation()
+    {
+        var marker2 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 2); // navigation TUIO
+        if (marker2 != null)
+        {
+            Debug.WriteLine("Marker2 Speed: " + marker2.YSpeed);
+            // Check if it's on the right half and movement exceeds the threshold
+            if (marker2.YSpeed > 9)
+            {
+                QuestionNumber += 1;
+                if (QuestionNumber >= questions.Count)
+                    QuestionNumber = 0;
+            }
+            if (marker2.RotationSpeed < -9)
+            {
+                QuestionNumber -= 1;
+                if (QuestionNumber < 0)
+                    QuestionNumber = questions.Count - 1;
+            }
 
+        }
+    }
     private void checkCollisonTrue()
     {
+        var marker10 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 10);
+        if(marker10 != null)
+        {
+            screen = 1;
+        }
         double distanceThreshold = 0.35;
 
         // Get the objects for SymbolID 1 and 4
@@ -762,27 +780,7 @@ public class TuioDemo : Form, TuioListener
             }
         }
 
-        var marker2 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 2); // navigation TUIO
-        float thresholdSpeed = 0.01f;
-        if (marker2 != null)
-        {
-
-            Debug.WriteLine("Marker2 Speed: " + marker2.RotationSpeed);
-            // Check if it's on the right half and movement exceeds the threshold
-            if (marker2.RotationSpeed > 7)
-            {
-                QuestionNumber += 1;
-                if (QuestionNumber > questions.Count)
-                    QuestionNumber = 0;
-            }
-            if (marker2.RotationSpeed < -7)
-            {
-                QuestionNumber -= 1;
-                if (QuestionNumber < 0)
-                    QuestionNumber = questions.Count-1; 
-            }
-
-        }
+        
         if (guesture.Count > 0)
         {
             if (guesture[guesture.Count - 1]=="next")

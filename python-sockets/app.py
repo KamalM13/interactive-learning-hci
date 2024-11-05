@@ -4,24 +4,24 @@ import struct
 import threading
 import queue
 from queue import Empty
-#import bluetooth
+import bluetooth
 import subprocess
 
-# def scan_bluetooth_devices(queue):
-#     print("Starting continuous Bluetooth scan...")
+def scan_bluetooth_devices(queue):
+    print("Starting continuous Bluetooth scan...")
 
-#     while True:
-#         try:
-#             # Discover nearby Bluetooth devices
-#             nearby_devices = bluetooth.discover_devices(lookup_names=True)
-#             # Add the latest scan results to the queue
-#             queue.put(nearby_devices)
-#             # Short delay before the next scan to avoid excessive looping
-#             time.sleep(1)
+    while True:
+        try:
+            # Discover nearby Bluetooth devices
+            nearby_devices = bluetooth.discover_devices(lookup_names=True)
+            # Add the latest scan results to the queue
+            queue.put(nearby_devices)
+            # Short delay before the next scan to avoid excessive looping
+            time.sleep(1)
 
-#         except Exception as e:
-#             print(f"An error occurred during Bluetooth scan: {str(e)}")
-#             time.sleep(1)
+        except Exception as e:
+            print(f"An error occurred during Bluetooth scan: {str(e)}")
+            time.sleep(1)
 
 
 def send_message(connection, message):
@@ -67,14 +67,12 @@ def start_client(queue):
                     bluetooth_devices = queue.get_nowait()
                     # Send data with the latest Bluetooth information
                     send_data(
-                        client_socket, question, answers, image_paths, bluetooth_devices, flag
+                        client_socket, question, answers, image_paths, bluetooth_devices, flag=flag
                     )
                     if(flag): break
                 except Empty:
-                    #if(flag): break
-                    # Queue is empty, proceed without sending Bluetooth data
-                    send_data(client_socket, question, answers, image_paths,flag)
-                # Short delay to prevent tight-looping
+                    send_data(client_socket, question, answers, image_paths,flag=flag)
+                    if(flag): break
                 time.sleep(0.5)
         except Exception as e:
             print(f"Connection failed: {e}")
@@ -108,11 +106,11 @@ def main():
     client_thread = threading.Thread(target=start_client, args=(bluetooth_queue,))
     client_thread.start()
 
-    # Start Bluetooth scanning in a separate thread
-    # bluetooth_thread = threading.Thread(
-    #     target=scan_bluetooth_devices, args=(bluetooth_queue,)
-    # )
-    # bluetooth_thread.start()
+   
+    bluetooth_thread = threading.Thread(
+        target=scan_bluetooth_devices, args=(bluetooth_queue,)
+    )
+    bluetooth_thread.start()
 
     # # Wait for threads to complete
     # bluetooth_thread.join()
