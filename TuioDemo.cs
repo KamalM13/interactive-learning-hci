@@ -786,19 +786,22 @@ public class TuioDemo : Form, TuioListener
                 if (message.StartsWith("Q:"))
                 {
                     string question = message.Substring(2);
-                    questions.Add(question);
+                    if(questions.Count <= 2)
+                        questions.Add(question);
                     Debug.WriteLine("Question: " + question);
                 }
                 else if (message.StartsWith("A:"))
                 {
                     string answer = message.Substring(2);
-                    answers.Add(answer);
+                    if(answers.Count <= 8)
+                        answers.Add(answer);
                     Debug.WriteLine("Answer " + answers.Count + ": " + answer);
                 }
                 else if (message.StartsWith("IMG:"))
                 {
                     string imagePath = message.Substring(4);
-                    imagePaths.Add(imagePath);
+                    if(imagePaths.Count <= 8)
+                        imagePaths.Add(imagePath);
                     Debug.WriteLine("Image Path " + imagePaths.Count + ": " + imagePath);
                 }
                 else if (message.StartsWith("BT:"))

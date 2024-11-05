@@ -32,22 +32,24 @@ def send_message(connection, message):
 
 
 def send_data(connection, question, answers, image_paths, bluetooth_devices=[], gesture_data=None, flag = False):
-    send_message(connection, f"Q:{question}")
+    for q in question:
+        send_message(connection, f"Q:{q}")
     for answer in answers:
         send_message(connection, f"A:{answer}")
     for img_path in image_paths:
         send_message(connection, f"IMG:{img_path}")
     for addr, name in bluetooth_devices:
         send_message(connection, f"BT:{addr},{name}")
+        flag = True
     if gesture_data:
         send_message(connection, f"GESTURE:{gesture_data}")
-        flag = True
     print("All data sent.")
     return flag 
 
 from queue import Empty
 
 def start_client(queue):
+    flag = False
     while True:
         try:
             client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -57,7 +59,7 @@ def start_client(queue):
             question = ["What is the capital of Egypt?", "What animal lays eggs?"]
             answers = ["Aswan", "Cairo", "Giza", "Behira", "Chicken", "Cow", "Fox", "Dog"]
             image_paths = ["cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg", "chicken.jpg", "cow.jpg", "fox.jpg", "dog.jpg"]
-            flag = True
+            
             # Continuously listen for new Bluetooth devices in the queue
             while True:
                 try:
@@ -67,10 +69,11 @@ def start_client(queue):
                     send_data(
                         client_socket, question, answers, image_paths, bluetooth_devices, flag
                     )
-                except Empty:
                     if(flag): break
+                except Empty:
+                    #if(flag): break
                     # Queue is empty, proceed without sending Bluetooth data
-                    send_data(client_socket, question, answers, image_paths)
+                    send_data(client_socket, question, answers, image_paths,flag)
                 # Short delay to prevent tight-looping
                 time.sleep(0.5)
         except Exception as e:
