@@ -4,24 +4,24 @@ import struct
 import threading
 import queue
 from queue import Empty
-import bluetooth
+#import bluetooth
 import subprocess
 
-def scan_bluetooth_devices(queue):
-    print("Starting continuous Bluetooth scan...")
+# def scan_bluetooth_devices(queue):
+#     print("Starting continuous Bluetooth scan...")
 
-    while True:
-        try:
-            # Discover nearby Bluetooth devices
-            nearby_devices = bluetooth.discover_devices(lookup_names=True)
-            # Add the latest scan results to the queue
-            queue.put(nearby_devices)
-            # Short delay before the next scan to avoid excessive looping
-            time.sleep(1)
+#     while True:
+#         try:
+#             # Discover nearby Bluetooth devices
+#             nearby_devices = bluetooth.discover_devices(lookup_names=True)
+#             # Add the latest scan results to the queue
+#             queue.put(nearby_devices)
+#             # Short delay before the next scan to avoid excessive looping
+#             time.sleep(1)
 
-        except Exception as e:
-            print(f"An error occurred during Bluetooth scan: {str(e)}")
-            time.sleep(1)
+#         except Exception as e:
+#             print(f"An error occurred during Bluetooth scan: {str(e)}")
+#             time.sleep(1)
 
 
 def send_message(connection, message):
@@ -109,13 +109,13 @@ def main():
     client_thread.start()
 
     # Start Bluetooth scanning in a separate thread
-    bluetooth_thread = threading.Thread(
-        target=scan_bluetooth_devices, args=(bluetooth_queue,)
-    )
-    bluetooth_thread.start()
+    # bluetooth_thread = threading.Thread(
+    #     target=scan_bluetooth_devices, args=(bluetooth_queue,)
+    # )
+    # bluetooth_thread.start()
 
-    # Wait for threads to complete
-    bluetooth_thread.join()
+    # # Wait for threads to complete
+    # bluetooth_thread.join()
     client_thread.join()
     # Optionally, wait for the gesture process to complete
     #gesture_process.wait()  # This will wait for live_ges.py to finish if needed

@@ -32,6 +32,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing.Drawing2D;
+using System.IO;
 
 public class Student
 {
@@ -351,6 +352,7 @@ public class TuioDemo : Form, TuioListener
 
         if (screen == 1) // 1 is the question screen
         {
+            checkCollisonTrue();
             changeQuestionBackground(pevent, g, c1Brush, c2Brush, c3Brush, c4Brush);
             checkCollisonTrue();
         }
@@ -378,26 +380,87 @@ public class TuioDemo : Form, TuioListener
     }
     private void DrawWelcomeScreen(Graphics g, PaintEventArgs pevent)
     {
-        // Set background color to purple
-        g.Clear(Color.Purple);
+        // Define dimensions based on window size
+        int width = this.ClientSize.Width;
+        int height = this.ClientSize.Height;
 
-        // Set text properties
-        string welcomeText = "Please show your ID code";
-        Font font = new Font("Arial", 24, FontStyle.Bold);
-        Brush textBrush = Brushes.Black;
+        // Set background gradient with colors that look good on larger screens
+        using (LinearGradientBrush bgBrush = new LinearGradientBrush(new Rectangle(0, 0, width, height), Color.LightSkyBlue, Color.MediumPurple, LinearGradientMode.Vertical))
+        {
+            g.FillRectangle(bgBrush, new Rectangle(0, 0, width, height));
+        }
 
-        // Measure and draw text in the center of the screen
+        // Draw fun background shapes
+        Random random = new Random();
+        for (int i = 0; i < 10; i++)
+        {
+            int shapeSize = random.Next(30, 60);
+            int posX = random.Next(0, width);
+            int posY = random.Next(0, height);
+            using (Brush shapeBrush = new SolidBrush(Color.FromArgb(50, Color.Yellow)))
+            {
+                g.FillEllipse(shapeBrush, posX, posY, shapeSize, shapeSize);
+            }
+        }
+
+        // Load and draw the character image at the top, scaled based on window size
+        try
+        {
+            using (Image characterImage = Image.FromFile("ID.png"))
+            {
+                float imageWidth = width / 6;
+                float imageHeight = characterImage.Height * (imageWidth / characterImage.Width);
+                float imageX = (width - imageWidth) / 2;
+                float imageY = height / 4 - imageHeight;
+
+                g.DrawImage(characterImage, new RectangleF(imageX, imageY, imageWidth, imageHeight));
+            }
+        }
+        catch (FileNotFoundException)
+        {
+            // Display a red "Image not found!" message on the screen for debugging
+            g.DrawString("Image not found!", new Font("Arial", 12), Brushes.Red, 10, 10);
+        }
+
+        // Set dynamic font size for welcome text based on window height
+        float fontSize = Math.Max(18, height / 20);
+        Font font = new Font("Comic Sans MS", fontSize, FontStyle.Bold);
+        Brush textBrush = new SolidBrush(Color.Yellow);
+
+        // Welcome text
+        string welcomeText = "Welcome! Show your ID code to start";
+
+        // Measure text to center it below the image
         SizeF textSize = g.MeasureString(welcomeText, font);
-        float x = (this.ClientSize.Width - textSize.Width) / 2;
-        float y = (this.ClientSize.Height - textSize.Height) / 2;
+        float x = (width - textSize.Width) / 2;
+        float y = height / 2; // Position text below the image
+
+        // Draw semi-transparent rounded rectangle (text bubble) around text
+        RectangleF textRect = new RectangleF(x - 6, y -10, textSize.Width + 10, textSize.Height + 20);
+        using (GraphicsPath path = new GraphicsPath())
+        {
+            float cornerRadius = Math.Min(textRect.Width, textRect.Height) / 5;
+            path.AddArc(textRect.X, textRect.Y, cornerRadius, cornerRadius, 180, 90);
+            path.AddArc(textRect.Right - cornerRadius, textRect.Y, cornerRadius, cornerRadius, 270, 90);
+            path.AddArc(textRect.Right - cornerRadius, textRect.Bottom - cornerRadius, cornerRadius, cornerRadius, 0, 90);
+            path.AddArc(textRect.X, textRect.Bottom - cornerRadius, cornerRadius, cornerRadius, 90, 90);
+            path.CloseFigure();
+
+            using (Brush bubbleBrush = new SolidBrush(Color.FromArgb(180, Color.DarkBlue)))
+            {
+                g.FillPath(bubbleBrush, path);
+            }
+        }
+
+        // Draw welcome text within the bubble
         g.DrawString(welcomeText, font, textBrush, x, y);
 
-        // If you need to use tuioId here, you can access it since it's a class member
-        // e.g., g.DrawString("TUIO ID: " + tuioId.ToString(), font, textBrush, new PointF(x, y + 30));
-
-        // Ensure tuioId is set correctly before calling this method
-        // TuioInputReceived(pevent, tuioId); // This might not be necessary here
+        // Dispose of resources
+        font.Dispose();
+        textBrush.Dispose();
     }
+
+
 
     private void TuioInputReceived(PaintEventArgs pevent, int tuioId)
     {
@@ -531,16 +594,19 @@ public class TuioDemo : Form, TuioListener
         int midWidth = width / 2;
         int midHeight = height / 2;
 
-        // Draw each quadrant
+        //// Draw each quadrant
+
         if (answers.Count >= 4)
         {
+            int ii = 0;
             for (int i = QuestionNumber * 4; i < QuestionNumber + 4; i++)
             {
                 int x = (i % 2 == 0) ? 0 : midWidth; // Left or right half
                 int y = (i < 2) ? 0 : midHeight; // Top or bottom half
 
                 // Fill each quadrant with a different color
-                g.FillRectangle(quadrantBrushes[i], x, y, midWidth, midHeight);
+                g.FillRectangle(quadrantBrushes[ii], x, y, midWidth, midHeight);
+                ii++;
 
                 // Draw the city name in the center of each quadrant
                 var cityFont = new Font("Arial", 24, FontStyle.Bold);
@@ -626,13 +692,14 @@ public class TuioDemo : Form, TuioListener
         g.FillRectangle(Brushes.White, boxX, boxY, questionBoxWidth, questionBoxHeight);
         g.DrawRectangle(Pens.Black, boxX, boxY, questionBoxWidth, questionBoxHeight);
         // Draw the question inside the box
+
         if (questions.Count > 0)
         {
             var questionFont = new Font("Arial", 18, FontStyle.Bold);
             var questionTextSize = g.MeasureString(questions[QuestionNumber], questionFont);
             float questionTextX = boxX + (questionBoxWidth - questionTextSize.Width) / 2;
             float questionTextY = boxY + (questionBoxHeight - questionTextSize.Height) / 2;
-            g.DrawString(questions[0], questionFont, Brushes.Black, new PointF(questionTextX, questionTextY));
+            g.DrawString(questions[QuestionNumber], questionFont, Brushes.Black, new PointF(questionTextX, questionTextY));
         }
     }
 
@@ -704,15 +771,15 @@ public class TuioDemo : Form, TuioListener
             // Check if it's on the right half and movement exceeds the threshold
             if (marker2.RotationSpeed > 7)
             {
-                screen += 1;
-                if (screen > 4)
-                    screen = 1;
+                QuestionNumber += 1;
+                if (QuestionNumber > questions.Count)
+                    QuestionNumber = 0;
             }
             if (marker2.RotationSpeed < -7)
             {
-                screen -= 1;
-                if (screen < 1)
-                    screen = 4;
+                QuestionNumber -= 1;
+                if (QuestionNumber < 0)
+                    QuestionNumber = questions.Count-1; 
             }
 
         }
@@ -720,15 +787,15 @@ public class TuioDemo : Form, TuioListener
         {
             if (guesture[guesture.Count - 1]=="next")
             {
-                screen += 1;
-                if (screen > 4)
-                    screen = 1;
+                QuestionNumber += 1;
+                if (QuestionNumber > questions.Count)
+                    QuestionNumber = 0;
             }
             if (guesture[guesture.Count - 1] == "previous")
             {
-                screen -= 1;
-                if (screen < 1)
-                    screen = 4;
+                QuestionNumber -= 1;
+                if (QuestionNumber < 0)
+                    QuestionNumber = questions.Count - 1;
             }
 
         }
@@ -786,23 +853,29 @@ public class TuioDemo : Form, TuioListener
                 if (message.StartsWith("Q:"))
                 {
                     string question = message.Substring(2);
-                    if(questions.Count <= 2)
+                    if (!questions.Contains(question))
+                    {
                         questions.Add(question);
-                    Debug.WriteLine("Question: " + question);
+                        Debug.WriteLine("Question: " + question);
+                    }
                 }
                 else if (message.StartsWith("A:"))
                 {
                     string answer = message.Substring(2);
-                    if(answers.Count <= 8)
+                    if (!answers.Contains(answer))
+                    {
                         answers.Add(answer);
-                    Debug.WriteLine("Answer " + answers.Count + ": " + answer);
+                        Debug.WriteLine("Answer " + answers.Count % 4 + ": " + answer);
+                    } 
                 }
                 else if (message.StartsWith("IMG:"))
                 {
                     string imagePath = message.Substring(4);
-                    if(imagePaths.Count <= 8)
+                    if (!imagePaths.Contains(imagePath))
+                    {
                         imagePaths.Add(imagePath);
-                    Debug.WriteLine("Image Path " + imagePaths.Count + ": " + imagePath);
+                        Debug.WriteLine("Image Path " + imagePaths.Count % 4+ ": " + imagePath);
+                    }
                 }
                 else if (message.StartsWith("BT:"))
                 {
