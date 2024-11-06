@@ -788,14 +788,14 @@ public class TuioDemo : Form, TuioListener
             }
             if (gesture[gesture.Count - 1] == "stop")
             {
-                exitRun();
+                screen = 5;
             }
         }
         if (gesture.Count > 0)
         {
             if (gesture[gesture.Count - 1] == "stop")
             {
-                exitRun();
+                screen = 5;
             }
         }
 
