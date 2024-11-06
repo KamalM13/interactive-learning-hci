@@ -48,7 +48,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
                     s.connect(('localhost', 12345))
                     s.sendall(f"GESTURE:{best_gesture}".encode('utf-8'))
                 except Exception as e:
-                    print("Error sending gesture data:", e)
+                    print("Error sending gesture data:", e,f"GESTURE:{best_gesture}".encode('utf-8'))
 
         cv2.imshow('Guestures cam', annotated_image)
         if cv2.waitKey(1) == ord('q'):

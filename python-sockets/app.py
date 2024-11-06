@@ -96,11 +96,11 @@ def main():
     
     # Start the gesture recognition script
     gesture_thread = threading.Thread(target=run_gesture_detection)
-    #reactivision_thread = threading.Thread(target=run_reactivision)
-    #gesture_thread.start()
-    #reactivision_thread.start()
-    #gesture_thread.join()
-    #reactivision_thread.join()
+    reactivision_thread = threading.Thread(target=run_reactivision)
+    gesture_thread.start()
+    reactivision_thread.start()
+    gesture_thread.join()
+    reactivision_thread.join()
 
     # Start the socket client in a separate thread
     client_thread = threading.Thread(target=start_client, args=(bluetooth_queue,))

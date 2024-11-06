@@ -788,14 +788,14 @@ public class TuioDemo : Form, TuioListener
             }
             if (gesture[gesture.Count - 1] == "stop")
             {
-                responseMessage = "you left the party";
+                exitRun();
             }
         }
         if (gesture.Count > 0)
         {
             if (gesture[gesture.Count - 1] == "stop")
             {
-                responseMessage = "you left the party";
+                exitRun();
             }
         }
 
