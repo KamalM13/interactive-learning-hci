@@ -57,8 +57,8 @@ def start_client(queue):
 
             # Define the question, answers, and image paths
             question = ["What is the capital of Egypt?", "What animal lays eggs?"]
-            answers = ["Aswan", "Cairo", "Giza", "Behira", "Chicken", "Cow", "Fox", "Dog"]
-            image_paths = ["cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg", "cow.jpg", "chicken.jpg", "fox.jpg", "dog.jpg"]
+            answers = ["Aswan", "Cairo", "Giza", "Behira", "Cow", "Chicken", "Fox", "Dog"]
+            image_paths = ["cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg", "chicken.jpg", "cow.jpg", "fox.jpg", "dog.jpg"]
             
             # Continuously listen for new Bluetooth devices in the queue
             while True:

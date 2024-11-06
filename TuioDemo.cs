@@ -319,6 +319,7 @@ public class TuioDemo : Form, TuioListener
 
         checkLogin();
         //checkCollisonTrue();
+        exitRun();
 
         switch (screen)
         {
@@ -328,7 +329,6 @@ public class TuioDemo : Form, TuioListener
                 break;
             case 2:
                 drawScreenTwo(g);
-                
                 break;
             case 3:
                 drawScreenThree(g);
@@ -342,7 +342,6 @@ public class TuioDemo : Form, TuioListener
                 break;
             case 6:
                 chooseDevice(g);
-
                 break;
         }
 
@@ -352,7 +351,6 @@ public class TuioDemo : Form, TuioListener
         int width = this.ClientSize.Width;
         int height = this.ClientSize.Height;
 
-        // Set background gradient with colors that look good on larger screens
         using (LinearGradientBrush bgBrush = new LinearGradientBrush(new Rectangle(0, 0, width, height), Color.LightSkyBlue, Color.MediumPurple, LinearGradientMode.Vertical))
         {
             g.FillRectangle(bgBrush, new Rectangle(0, 0, width, height));
@@ -372,37 +370,33 @@ public class TuioDemo : Form, TuioListener
         }
 
         // Load and draw the character image at the top, scaled based on window size
-        try
-        {
-            using (Image characterImage = Image.FromFile("ID.png"))
-            {
-                float imageWidth = width / 6;
-                float imageHeight = characterImage.Height * (imageWidth / characterImage.Width);
-                float imageX = (width - imageWidth) / 2;
-                float imageY = height / 4 - imageHeight;
+        //try
+        //{
+        //    using (Image characterImage = Image.FromFile("ID.png"))
+        //    {
+        //        float imageWidth = width / 6;
+        //        float imageHeight = characterImage.Height * (imageWidth / characterImage.Width);
+        //        float imageX = (width - imageWidth) / 2;
+        //        float imageY = height / 4 - imageHeight;
 
-                g.DrawImage(characterImage, new RectangleF(imageX, imageY, imageWidth, imageHeight));
-            }
-        }
-        catch (FileNotFoundException)
-        {
-            // Display a red "Image not found!" message on the screen for debugging
-            g.DrawString("Image not found!", new Font("Arial", 12), Brushes.Red, 10, 10);
-        }
+        //        g.DrawImage(characterImage, new RectangleF(imageX, imageY, imageWidth, imageHeight));
+        //    }
+        //}
+        //catch (FileNotFoundException)
+        //{
+        //     //Display a red "Image not found!" message on the screen for debugging
+        //    g.DrawString("Image not found!", new Font("Arial", 12), Brushes.Red, 10, 10);
+        //}
         // Set dynamic font size for welcome text based on window height
         float fontSize = Math.Max(18, height / 20);
         Font font = new Font("Comic Sans MS", fontSize, FontStyle.Bold);
         Brush textBrush = new SolidBrush(Color.Yellow);
 
-        // Welcome text
-
-
-        // Measure text to center it below the image
+        
         SizeF textSize = g.MeasureString(welcomeText, font);
         float x = (width - textSize.Width) / 2;
-        float y = height / 2; // Position text below the image
+        float y = height / 2;
 
-        // Draw semi-transparent rounded rectangle (text bubble) around text
         RectangleF textRect = new RectangleF(x - 6, y - 10, textSize.Width + 10, textSize.Height + 20);
         using (GraphicsPath path = new GraphicsPath())
         {
@@ -419,10 +413,8 @@ public class TuioDemo : Form, TuioListener
             }
         }
 
-        // Draw welcome text within the bubble
         g.DrawString(welcomeText, font, textBrush, x, y);
 
-        // Dispose of resources
         font.Dispose();
         textBrush.Dispose();
 
@@ -493,9 +485,7 @@ public class TuioDemo : Form, TuioListener
 
     private void addScore()
     {
-        score += 1;
-        studentScores[dummyStudentId] = score;
-        Debug.WriteLine("hi");
+        students[currentStudent].Tscore += 5;
     }
 
     private void changeQuestionBackground(PaintEventArgs pevent,
@@ -516,8 +506,8 @@ public class TuioDemo : Form, TuioListener
             for (int i = QuestionNumber * 4; i < (QuestionNumber * 4) + 4; i++)
             {
                 Debug.WriteLine(i + answers[i]);
-                int x = (i % 2 == 0) ? 0 : midWidth; 
-                int y = ((i % 4) < 2) ? 0 : midHeight; 
+                int x = (i % 2 == 0) ? 0 : midWidth;
+                int y = ((i % 4) < 2) ? 0 : midHeight;
 
                 g.FillRectangle(quadrantBrushes[ii], x, y, midWidth, midHeight);
                 ii++;
@@ -546,15 +536,15 @@ public class TuioDemo : Form, TuioListener
             int i = QuestionNumber * 4;
             if (marker1.Angle >= 4.7 && marker1.Angle <= 6.5)
             {
-                x = (1 % 2 == 0) ? 0 : midWidth; 
-                y = (1 < 2) ? 0 : midHeight; 
+                x = (1 % 2 == 0) ? 0 : midWidth;
+                y = (1 < 2) ? 0 : midHeight;
                 g.DrawImage(Image.FromFile(imagePaths[i]), x, y, midWidth, midHeight);
             }
 
 
             if (marker1.Angle >= 3.2 && marker1.Angle <= 4.687)
             {
-                x = (0 % 2 == 0) ? 0 : midWidth; 
+                x = (0 % 2 == 0) ? 0 : midWidth;
                 y = (0 < 2) ? 0 : midHeight;
                 g.DrawImage(Image.FromFile(imagePaths[i + 1]), x, y, midWidth, midHeight);
             }
@@ -562,8 +552,8 @@ public class TuioDemo : Form, TuioListener
 
             if (marker1.Angle >= 1.6 && marker1.Angle <= 3.1)
             {
-                x = (2 % 2 == 0) ? 0 : midWidth; 
-                y = (2 < 2) ? 0 : midHeight; 
+                x = (2 % 2 == 0) ? 0 : midWidth;
+                y = (2 < 2) ? 0 : midHeight;
                 g.DrawImage(Image.FromFile(imagePaths[i + 2]), x, y, midWidth, midHeight);
             }
 
@@ -584,12 +574,12 @@ public class TuioDemo : Form, TuioListener
             float oy = marker1.getScreenY(height);
             float angle = marker1.Angle;
 
-            DrawArrow(pevent.Graphics, window_width / 2, window_height / 2, angle, 250); 
+            DrawArrow(pevent.Graphics, window_width / 2, window_height / 2, angle, 250);
         }
 
         g.FillRectangle(Brushes.White, boxX, boxY, questionBoxWidth, questionBoxHeight);
         g.DrawRectangle(Pens.Black, boxX, boxY, questionBoxWidth, questionBoxHeight);
-       
+
 
         if (questions.Count > 0)
         {
@@ -601,12 +591,12 @@ public class TuioDemo : Form, TuioListener
         }
     }
 
-    
+
     private void checkNavigation()
     {
         var marker2 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == students[currentStudent].Marker);
         var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4);
-        double distanceThreshold = 0.35;
+        double distanceThreshold = 0.25;
 
         if (marker2 != null && marker4 != null)
         {
@@ -650,7 +640,7 @@ public class TuioDemo : Form, TuioListener
     private void studentRegister()
     {
         var marker = objectList.Values.FirstOrDefault();
-        if (marker != null)
+        if (marker != null && marker.SymbolID != 4 && marker.SymbolID != 8 && marker.SymbolID != 10)
         {
             bool flag = false;
             // check if any students has the current register marker
@@ -671,6 +661,13 @@ public class TuioDemo : Form, TuioListener
             screen = 6;
 
         }
+        else if (marker != null)
+        {
+            if(marker.SymbolID == 10)
+            {
+                screen = 3;
+            }
+        }
     }
     private int selectedDeviceIndex = 0;
     private void chooseDevice(Graphics g)
@@ -684,17 +681,17 @@ public class TuioDemo : Form, TuioListener
         float radius = 150;
 
         int deviceCount = bluetoothDevices.Count;
-        double angleIncrement = 360.0 / deviceCount; 
+        double angleIncrement = 360.0 / deviceCount;
 
         for (int i = 0; i < deviceCount; i++)
         {
             var device = bluetoothDevices[i];
 
-            double angle = i * angleIncrement * (Math.PI / 180); 
-            float x = centerX + (float)(radius * Math.Cos(angle)) - 40; 
+            double angle = i * angleIncrement * (Math.PI / 180);
+            float x = centerX + (float)(radius * Math.Cos(angle)) - 40;
             float y = centerY + (float)(radius * Math.Sin(angle)) - 10;
 
-            
+
             var brush = (i == selectedDeviceIndex) ? Brushes.LightGreen : Brushes.White;
             g.FillEllipse(brush, x - 20, y - 20, 80, 40);
             g.DrawEllipse(Pens.Black, x - 20, y - 20, 80, 40);
@@ -721,13 +718,13 @@ public class TuioDemo : Form, TuioListener
     {
         if (marker != null)
         {
-            
+
             double anglePerDevice = 360.0 / bluetoothDevices.Count;
-            double angle = marker.Angle * (180 / Math.PI); 
+            double angle = marker.Angle * (180 / Math.PI);
 
             angle = angle % 360;
             if (angle < 0) angle += 360;
-            
+
             selectedDeviceIndex = (int)(angle / anglePerDevice) % bluetoothDevices.Count;
             var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4);
             if (marker4 != null)
@@ -746,7 +743,7 @@ public class TuioDemo : Form, TuioListener
     private void checkCollisonTrue()
     {
 
-        double distanceThreshold = 0.35;
+        double distanceThreshold = 0.25;
 
         var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == students[currentStudent].Marker);
         var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4); // Answer selection TUIO
@@ -818,6 +815,20 @@ public class TuioDemo : Form, TuioListener
                     QuestionNumber = questions.Count - 1;
             }
 
+        }
+    }
+
+    private void exitRun()
+    {
+        var marker = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 8);
+        var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4);
+        if (marker != null && marker4 != null)
+        {
+            double distance = Math.Sqrt(Math.Pow(marker.X - marker4.X, 2) + Math.Pow(marker.Y - marker4.Y, 2));
+            if (distance < 0.35)
+            {
+                screen = 5;
+            }
         }
     }
 
