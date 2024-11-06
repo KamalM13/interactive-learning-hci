@@ -58,7 +58,7 @@ def start_client(queue):
             # Define the question, answers, and image paths
             question = ["What is the capital of Egypt?", "What animal lays eggs?"]
             answers = ["Aswan", "Cairo", "Giza", "Behira", "Chicken", "Cow", "Fox", "Dog"]
-            image_paths = ["cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg", "chicken.jpg", "cow.jpg", "fox.jpg", "dog.jpg"]
+            image_paths = ["cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg", "cow.jpg", "chicken.jpg", "fox.jpg", "dog.jpg"]
             
             # Continuously listen for new Bluetooth devices in the queue
             while True:
@@ -83,7 +83,7 @@ def start_client(queue):
 
 def run_gesture_detection():
     # Run your gesture detection script
-    gesture_script = "F:/Uni/4th year/Hci/project/interactive-learning-hci/python-sockets/live_ges.py"
+    gesture_script = "live_ges.py"
     subprocess.Popen(["python", gesture_script])
 def run_reactivision():
     # Assuming reacTIVision is an executable or script
@@ -96,11 +96,11 @@ def main():
     
     # Start the gesture recognition script
     gesture_thread = threading.Thread(target=run_gesture_detection)
-    reactivision_thread = threading.Thread(target=run_reactivision)
-    gesture_thread.start()
-    reactivision_thread.start()
-    gesture_thread.join()
-    reactivision_thread.join()
+    #reactivision_thread = threading.Thread(target=run_reactivision)
+    #gesture_thread.start()
+    #reactivision_thread.start()
+    #gesture_thread.join()
+    #reactivision_thread.join()
 
     # Start the socket client in a separate thread
     client_thread = threading.Thread(target=start_client, args=(bluetooth_queue,))

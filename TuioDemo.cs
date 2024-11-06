@@ -1,4 +1,4 @@
-/*
+﻿/*
 	TUIO C# Demo - part of the reacTIVision project
 	Copyright (c) 2005-2016 Martin Kaltenbrunner <martin@tuio.org>
 
@@ -44,13 +44,19 @@ public class Student
 
     public bool Attended { get; set; }
 
+    public string Bluetooth { get; set; }
+
+    public int Marker { get; set; }
+
     // Constructor
-    public Student(int studentId, string name)
+    public Student(int studentId, string name, string bluetooth, int marker)
     {
         StudentId = studentId;
         Name = name;
         Attended = false;
         Tscore = 0;
+        Bluetooth = bluetooth;
+        Marker = marker;
     }
 }
 
@@ -74,17 +80,14 @@ public class TuioDemo : Form, TuioListener
     private bool fullscreen;
     private bool verbose;
     private static List<string> gesture = new List<string>();
-    private static int screen = 1;
+    private static int screen = 5;
     private static int QuestionNumber = 0;
-    private string Question = "What is the capital of Egypt?";
-    private string choiceOne = "Alex";
-    private string choiceTwo = "Cairo";
-    private string choiceThree = "Giza";
-    private string choiceFour = "Aswan";
     private string responseMessage = "";
     private int score = 0;
     private Dictionary<string, int> studentScores = new Dictionary<string, int>();
     private string dummyStudentId = "123";
+    private int currentStudent = 0;
+    private bool hasNavigated = false;
 
     private static List<string> questions = new List<string>();
     private static List<string> imagePaths = new List<string>();
@@ -92,9 +95,9 @@ public class TuioDemo : Form, TuioListener
     private static List<string> bluetoothDevices = new List<string>();
     private List<Student> students = new List<Student>
     {
-    new Student(1, "John Doe") { Attended = true, Tscore = 3 },
-    new Student(2, "Jane Smith") { Attended = true, Tscore = 5 },
-    new Student(3, "Alex Brown") { Attended = false, Tscore = 0 }
+    new Student(1, "Kamal Mohamed", "CC:F9:F0:CD:B9:DC",0) { Attended = false, Tscore = 0 },
+    new Student(2, "Jane Smith", "", 0) { Attended = true, Tscore = 5 },
+    new Student(3, "Alex Brown", "", 0) { Attended = false, Tscore = 0 }
     };
 
     Font font = new Font("Arial", 10.0f);
@@ -198,38 +201,7 @@ public class TuioDemo : Form, TuioListener
         lock (objectList)
         {
             objectList.Add(o.SessionID, o);
-        }
-
-        // Check for the TUIO object ID and change the screen based on the SymbolID
-        //if (screen)
-        {
-            /*if (objectList.Values.Any(obj => obj.SymbolID == 1) &&
-           objectList.Values.Any(obj => obj.SymbolID == 4))
-            {
-                responseMessage = "Ashter katkout";
-                welcomeScreen = false;
-            }
-            else if (objectList.Values.Any(obj => obj.SymbolID == 4) &&
-					!objectList.Values.Any(obj => obj.SymbolID == 1))
-            {
-                responseMessage = "Stubiddd";
-                welcomeScreen = false;
-            }*/
-
-            //        if (objectList.Values.Any(obj => obj.SymbolID == 1) &&
-            //objectList.Values.Any(obj => obj.SymbolID == 4) &&
-            //objectList.Values.Any(obj => obj.SymbolID == 1 && obj.Angle >= 5.23599 && obj.Angle <= 6.10865))  // Range: 300 to 350 degrees (in radians)
-            //        {
-
-            //            responseMessage = "Ashter katkout";
-            //            welcomeScreen = false;
-            //        }
-            //        else if (objectList.Values.Any(obj => obj.SymbolID == 4) &&
-            //                !objectList.Values.Any(obj => obj.SymbolID == 1 && obj.Angle >= 5.23599 && obj.Angle <= 6.10865))
-            //        {
-            //            responseMessage = "Stubiddd";
-            //            welcomeScreen = false;
-            //        }
+            Debug.WriteLine(o.SymbolID);
         }
     }
 
@@ -252,6 +224,7 @@ public class TuioDemo : Form, TuioListener
         lock (cursorList)
         {
             cursorList.Add(c.SessionID, c);
+            Debug.WriteLine(c.SessionID);
         }
         if (verbose) Console.WriteLine("add cur " + c.CursorID + " (" + c.SessionID + ") " + c.X + " " + c.Y);
     }
@@ -344,38 +317,38 @@ public class TuioDemo : Form, TuioListener
         //        screen = 3;
         //}
 
+        checkLogin();
+        //checkCollisonTrue();
 
-        if (screen == 1) // 1 is the question screen
+        switch (screen)
         {
-            checkCollisonTrue();
-            changeQuestionBackground(pevent, g, c1Brush, c2Brush, c3Brush, c4Brush);
-            checkCollisonTrue();
+            case 1:
+                changeQuestionBackground(pevent, g, c1Brush, c2Brush, c3Brush, c4Brush);
+                checkCollisonTrue();
+                break;
+            case 2:
+                drawScreenTwo(g);
+                
+                break;
+            case 3:
+                drawScreenThree(g);
+                break;
+            case 4:
+                drawScreenFour(pevent, g, c1Brush, c2Brush, c3Brush, c4Brush);
+                break;
+            case 5:
+                drawWelcomeScreen(g, pevent);
+                studentRegister();
+                break;
+            case 6:
+                chooseDevice(g);
+
+                break;
         }
-        else if (screen == 2) // 2 is the answer screen
-        {
-            drawScreenTwo(g);
-            checkCollisonTrue();
-        }
-        else if (screen == 3) // 3 is the teacher screen
-        {
-            drawScreenThree(g);
-            checkCollisonTrue();
-        }
-        else if (screen == 4)
-        {
-            drawScreenFour(pevent, g, c1Brush, c2Brush, c3Brush, c4Brush);
-            checkCollisonTrue();
-        }
-        else if (screen == 5)
-        {
-            DrawWelcomeScreen(g, pevent);
-            checkCollisonTrue();
-        }
-        checkNavigation();
+
     }
-    private void DrawWelcomeScreen(Graphics g, PaintEventArgs pevent)
+    private void drawWelcomeBackground(Graphics g, PaintEventArgs pevent, string welcomeText)
     {
-        // Define dimensions based on window size
         int width = this.ClientSize.Width;
         int height = this.ClientSize.Height;
 
@@ -416,14 +389,13 @@ public class TuioDemo : Form, TuioListener
             // Display a red "Image not found!" message on the screen for debugging
             g.DrawString("Image not found!", new Font("Arial", 12), Brushes.Red, 10, 10);
         }
-
         // Set dynamic font size for welcome text based on window height
         float fontSize = Math.Max(18, height / 20);
         Font font = new Font("Comic Sans MS", fontSize, FontStyle.Bold);
         Brush textBrush = new SolidBrush(Color.Yellow);
 
         // Welcome text
-        string welcomeText = "Welcome! Show your ID code to start";
+
 
         // Measure text to center it below the image
         SizeF textSize = g.MeasureString(welcomeText, font);
@@ -431,7 +403,7 @@ public class TuioDemo : Form, TuioListener
         float y = height / 2; // Position text below the image
 
         // Draw semi-transparent rounded rectangle (text bubble) around text
-        RectangleF textRect = new RectangleF(x - 6, y -10, textSize.Width + 10, textSize.Height + 20);
+        RectangleF textRect = new RectangleF(x - 6, y - 10, textSize.Width + 10, textSize.Height + 20);
         using (GraphicsPath path = new GraphicsPath())
         {
             float cornerRadius = Math.Min(textRect.Width, textRect.Height) / 5;
@@ -453,45 +425,61 @@ public class TuioDemo : Form, TuioListener
         // Dispose of resources
         font.Dispose();
         textBrush.Dispose();
+
     }
 
-
-
-    private void TuioInputReceived(PaintEventArgs pevent, int tuioId)
+    private void drawWelcomeScreen(Graphics g, PaintEventArgs pevent)
     {
-        //this.tuioId = tuioId; // Store the received TUIO ID in the class property
-        Graphics g = pevent.Graphics;
-
-        // Clear previous drawing and redraw the background image
-        g.DrawImage(Image.FromFile("home.jpg"), 0, 0, width, height);
-        
-
-        // SolidBrushes remain the same
-        SolidBrush c1Brush = new SolidBrush(Color.Red);
-        SolidBrush c2Brush = new SolidBrush(Color.Green);
-        SolidBrush c3Brush = new SolidBrush(Color.Blue);
-        SolidBrush c4Brush = new SolidBrush(Color.Olive);
-        changeQuestionBackground(pevent, g, c1Brush, c2Brush, c3Brush, c4Brush);
-
-        // Handle TUIO input: switch screens based on TUIO ID
-        if (tuioId == 10)
-        {
-
-            drawScreenTwo(g);
-            checkCollisonTrue();
-            //screen = 1;
-
-        }
-        else if (tuioId == 11)
-        {
-            drawScreenThree(g);
-            checkCollisonTrue(); // Switch to teacher screen
-            screen = 3;
-        }
-
-        // Refresh the form to update the screen
-        this.Invalidate();
+        drawWelcomeBackground(g, pevent, "Student register with TUIO");
     }
+    private void drawScreenTwo(Graphics g)
+    {
+        // Display the response after TUIO interaction
+        if (responseMessage == "Ashter katkout")
+        {
+            drawWelcomeBackground(g, null, "Correct Answer!");
+            checkNavigation();
+        }
+        else if (responseMessage == "Try again")
+        {
+            drawWelcomeBackground(g, null, "Incorrect Answer!");
+            checkCollisonTrue();
+        }
+    }
+    private void drawScreenThree(Graphics g)
+    {
+        g.Clear(Color.LightBlue);
+
+        g.DrawString("Hello, Teacher!", new Font("Arial", 24, FontStyle.Bold), Brushes.Black, new PointF(width / 2 - 100, 50));
+
+        g.FillRectangle(Brushes.DarkBlue, new Rectangle((int)(width / 2 - 250), 100, 550, 40));
+        g.DrawString("Name", new Font("Arial", 16, FontStyle.Bold), Brushes.White, new PointF(width / 2 - 240, 110));
+        g.DrawString("Score", new Font("Arial", 16, FontStyle.Bold), Brushes.White, new PointF(width / 2 - 70, 110));
+        g.DrawString("Device", new Font("Arial", 16, FontStyle.Bold), Brushes.White, new PointF(width / 2 + 60, 110));
+        g.DrawString("Attended", new Font("Arial", 16, FontStyle.Bold), Brushes.White, new PointF(width / 2 + 180, 110));
+
+        float startX = width / 2 - 250;
+        float startY = 150;
+        float rowHeight = 30;
+        float rowWidth = 500;
+
+        foreach (var student in students)
+        {
+            g.FillRectangle(Brushes.White, new Rectangle((int)startX, (int)startY, (int)rowWidth, (int)rowHeight));
+            g.DrawRectangle(Pens.Black, new Rectangle((int)startX, (int)startY, (int)rowWidth, (int)rowHeight));
+
+            g.DrawString(student.Name, new Font("Arial", 14), Brushes.Black, new PointF(startX + 10, startY + 5));
+            g.DrawString(student.Tscore.ToString(), new Font("Arial", 14), Brushes.Black, new PointF(startX + 180, startY + 5));
+            g.DrawString(student.Bluetooth, new Font("Arial", 8), Brushes.Black, new PointF(startX + 300, startY + 5));
+            g.DrawString(student.Attended ? "Yes" : "No", new Font("Arial", 14), Brushes.Black, new PointF(startX + 420, startY + 5));
+
+            startY += rowHeight;
+
+        }
+
+        checkCollisonTrue();
+    }
+
 
     private void drawScreenFour(PaintEventArgs pevent,
     Graphics g,
@@ -502,71 +490,6 @@ public class TuioDemo : Form, TuioListener
     {
 
     }
-
-
-    private void drawScreenTwo(Graphics g)
-    {
-        // Display the response after TUIO interaction
-        if (responseMessage == "Ashter katkout")
-        {
-            g.DrawString
-                (responseMessage,
-                 new Font("Comic Sans MS", 18.0f, FontStyle.Bold),
-                 new SolidBrush(Color.Cyan),
-                 new PointF(width / 2 - 100, height / 2));
-        }
-        else if (responseMessage == "Try again")
-        {
-            g.DrawString
-                (responseMessage,
-                 new Font("Arial", 19.0f, FontStyle.Italic),
-                 new SolidBrush(Color.Red),
-                 new PointF(width / 2 - 100, height / 2));
-        }
-        checkCollisonTrue();
-    }
-    private void drawScreenThree(Graphics g)
-    {
-        // Set the background color by filling the rectangle covering the entire screen
-        g.Clear(Color.LightBlue); // Change to any background color you prefer
-
-        // Draw a welcome message
-        g.DrawString("Hello, Teacher!", new Font("Arial", 24, FontStyle.Bold), Brushes.Black, new PointF(width / 2 - 100, 50));
-
-        // Draw the header for the table
-        g.FillRectangle(Brushes.DarkBlue, new Rectangle((int)(width / 2 - 150), 100, 300, 40));
-        g.DrawString("Name", new Font("Arial", 16, FontStyle.Bold), Brushes.White, new PointF(width / 2 - 140, 110));
-        g.DrawString("Score", new Font("Arial", 16, FontStyle.Bold), Brushes.White, new PointF(width / 2 + 50, 110));
-
-        // Variables for positioning the rows
-        float startX = width / 2 - 150;
-        float startY = 150;
-        float rowHeight = 30;
-        float rowWidth = 300;
-
-        // Draw table rows for each student who attended the quiz
-        foreach (var student in students)
-        {
-            if (student.Attended)
-            {
-                // Draw a rectangle for the current row
-                g.FillRectangle(Brushes.White, new Rectangle((int)startX, (int)startY, (int)rowWidth, (int)rowHeight));
-                g.DrawRectangle(Pens.Black, new Rectangle((int)startX, (int)startY, (int)rowWidth, (int)rowHeight));
-
-                // Draw student name and score
-                g.DrawString(student.Name, new Font("Arial", 14), Brushes.Black, new PointF(startX + 10, startY + 5));
-                g.DrawString(student.Tscore.ToString(), new Font("Arial", 14), Brushes.Black, new PointF(startX + 200, startY + 5));
-
-                // Move down for the next row
-                startY += rowHeight;
-            }
-        }
-
-        // Check for any collision detection logic if necessary
-        checkCollisonTrue();
-    }
-
-
 
     private void addScore()
     {
@@ -582,28 +505,23 @@ public class TuioDemo : Form, TuioListener
         SolidBrush c3Brush,
         SolidBrush c4Brush)
     {
-
         Brush[] quadrantBrushes = { c1Brush, c2Brush, c3Brush, c4Brush };
 
-        // Dimensions for the quadrants
         int midWidth = width / 2;
         int midHeight = height / 2;
-
-        //// Draw each quadrant
 
         if (answers.Count >= 4)
         {
             int ii = 0;
-            for (int i = QuestionNumber * 4; i < QuestionNumber + 4; i++)
+            for (int i = QuestionNumber * 4; i < (QuestionNumber * 4) + 4; i++)
             {
-                int x = (i % 2 == 0) ? 0 : midWidth; // Left or right half
-                int y = (i < 2) ? 0 : midHeight; // Top or bottom half
+                Debug.WriteLine(i + answers[i]);
+                int x = (i % 2 == 0) ? 0 : midWidth; 
+                int y = ((i % 4) < 2) ? 0 : midHeight; 
 
-                // Fill each quadrant with a different color
                 g.FillRectangle(quadrantBrushes[ii], x, y, midWidth, midHeight);
                 ii++;
 
-                // Draw the city name in the center of each quadrant
                 var cityFont = new Font("Arial", 24, FontStyle.Bold);
                 var textSize = g.MeasureString(answers[i], cityFont);
                 float textX = x + (midWidth - textSize.Width) / 2;
@@ -612,19 +530,13 @@ public class TuioDemo : Form, TuioListener
             }
         }
 
-        // Draw a box in the center for the question
         int questionBoxWidth = 400;
         int questionBoxHeight = 100;
         int boxX = (width - questionBoxWidth) / 2;
         int boxY = (height - questionBoxHeight) / 2;
 
-        ///////////
 
-        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
-
-
-
-
+        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == students[currentStudent].Marker);
 
         if (marker1 != null)
         {
@@ -634,59 +546,50 @@ public class TuioDemo : Form, TuioListener
             int i = QuestionNumber * 4;
             if (marker1.Angle >= 4.7 && marker1.Angle <= 6.5)
             {
-                x = (1 % 2 == 0) ? 0 : midWidth; // Left or right halfKD
-                y = (1 < 2) ? 0 : midHeight; // Top or bottom half
+                x = (1 % 2 == 0) ? 0 : midWidth; 
+                y = (1 < 2) ? 0 : midHeight; 
                 g.DrawImage(Image.FromFile(imagePaths[i]), x, y, midWidth, midHeight);
             }
 
 
             if (marker1.Angle >= 3.2 && marker1.Angle <= 4.687)
             {
-                x = (0 % 2 == 0) ? 0 : midWidth; // Left or right half
-                y = (0 < 2) ? 0 : midHeight; // Top or bottom half
+                x = (0 % 2 == 0) ? 0 : midWidth; 
+                y = (0 < 2) ? 0 : midHeight;
                 g.DrawImage(Image.FromFile(imagePaths[i + 1]), x, y, midWidth, midHeight);
             }
 
 
             if (marker1.Angle >= 1.6 && marker1.Angle <= 3.1)
             {
-                x = (2 % 2 == 0) ? 0 : midWidth; // Left or right half
-                y = (2 < 2) ? 0 : midHeight; // Top or bottom half
+                x = (2 % 2 == 0) ? 0 : midWidth; 
+                y = (2 < 2) ? 0 : midHeight; 
                 g.DrawImage(Image.FromFile(imagePaths[i + 2]), x, y, midWidth, midHeight);
             }
 
 
             if (marker1.Angle >= 0 && marker1.Angle <= 1.5)
             {
-                x = (3 % 2 == 0) ? 0 : midWidth; // Left or right half
-                y = (3 < 2) ? 0 : midHeight; // Top or bottom half
+                x = (3 % 2 == 0) ? 0 : midWidth;
+                y = (3 < 2) ? 0 : midHeight;
 
                 g.DrawImage(Image.FromFile(imagePaths[i + 3]), x, y, midWidth, midHeight);
             }
 
-
-
-            // Log or display the angle for debugging purposes
-            //Debug.WriteLine("Marker1 Angle: " + marker1.Angle);
         }
 
-        var tuioObject = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
-        if (tuioObject != null)
+        if (marker1 != null)
         {
+            float ox = marker1.getScreenX(width);
+            float oy = marker1.getScreenY(height);
+            float angle = marker1.Angle;
 
-            // Get position and angle of the TUIO object
-            float ox = tuioObject.getScreenX(width);
-            float oy = tuioObject.getScreenY(height);
-            float angle = tuioObject.Angle; // Angle in radians
-
-            // Draw the arrow at the object's position
-            DrawArrow(pevent.Graphics, window_width / 2, window_height / 2, angle, 250); // Adjust size as needed
+            DrawArrow(pevent.Graphics, window_width / 2, window_height / 2, angle, 250); 
         }
 
-        // Draw the question box with a border
         g.FillRectangle(Brushes.White, boxX, boxY, questionBoxWidth, questionBoxHeight);
         g.DrawRectangle(Pens.Black, boxX, boxY, questionBoxWidth, questionBoxHeight);
-        // Draw the question inside the box
+       
 
         if (questions.Count > 0)
         {
@@ -697,68 +600,184 @@ public class TuioDemo : Form, TuioListener
             g.DrawString(questions[QuestionNumber], questionFont, Brushes.Black, new PointF(questionTextX, questionTextY));
         }
     }
+
+    
     private void checkNavigation()
     {
-        var marker2 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 2); // navigation TUIO
-        if (marker2 != null)
+        var marker2 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == students[currentStudent].Marker);
+        var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4);
+        double distanceThreshold = 0.35;
+
+        if (marker2 != null && marker4 != null)
         {
-            Debug.WriteLine("Marker2 Speed: " + marker2.YSpeed);
-            // Check if it's on the right half and movement exceeds the threshold
-            if (marker2.YSpeed > 9)
+            double distance = Math.Sqrt(Math.Pow(marker2.X - marker4.X, 2) + Math.Pow(marker2.Y - marker4.Y, 2));
+
+            if (distance < distanceThreshold && !hasNavigated)
             {
-                QuestionNumber += 1;
-                if (QuestionNumber >= questions.Count)
-                    QuestionNumber = 0;
+                if (marker2.X > marker4.X)
+                {
+                    QuestionNumber = (QuestionNumber + 1) % questions.Count;
+                    screen = 1;
+                }
+                else if (marker2.X < marker4.X)
+                {
+                    QuestionNumber = (QuestionNumber - 1 + questions.Count) % questions.Count;
+                    screen = 1;
+                }
+                hasNavigated = true;
             }
-            if (marker2.RotationSpeed < -9)
+            else if (distance >= distanceThreshold)
             {
-                QuestionNumber -= 1;
-                if (QuestionNumber < 0)
-                    QuestionNumber = questions.Count - 1;
+                hasNavigated = false;
+            }
+        }
+    }
+    private void checkLogin()
+    {
+        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1); // Student Login
+        if (marker1 != null)
+        {
+            for (int i = 0; i < students.Count; i++)
+            {
+                if (students[i].Bluetooth == "CC:F9:F0:CD:B9:DC")
+                {
+                    students[i].Attended = true;
+                    screen = 3;
+                }
+            }
+        }
+    }
+    private void studentRegister()
+    {
+        var marker = objectList.Values.FirstOrDefault();
+        if (marker != null)
+        {
+            bool flag = false;
+            // check if any students has the current register marker
+            for (int i = 0; i < students.Count; i++)
+            {
+                if (students[i].Marker == marker.SymbolID)
+                {
+                    students[i].Attended = true;
+                    currentStudent = i;
+                    screen = 3;
+                    flag = true;
+                }
+            }
+            if (flag) return;
+            Student temp = new Student(students.Count + 1, "Student" + (students.Count + 1), "", marker.SymbolID) { Attended = true };
+            students.Add(temp);
+            currentStudent = students.Count - 1;
+            screen = 6;
+
+        }
+    }
+    private int selectedDeviceIndex = 0;
+    private void chooseDevice(Graphics g)
+    {
+        g.Clear(Color.LightBlue);
+
+        g.DrawString("Select Your Bluetooth Device", new Font("Arial", 24, FontStyle.Bold), Brushes.Black, new PointF(width / 2 - 150, 50));
+
+        float centerX = width / 2;
+        float centerY = height / 2;
+        float radius = 150;
+
+        int deviceCount = bluetoothDevices.Count;
+        double angleIncrement = 360.0 / deviceCount; 
+
+        for (int i = 0; i < deviceCount; i++)
+        {
+            var device = bluetoothDevices[i];
+
+            double angle = i * angleIncrement * (Math.PI / 180); 
+            float x = centerX + (float)(radius * Math.Cos(angle)) - 40; 
+            float y = centerY + (float)(radius * Math.Sin(angle)) - 10;
+
+            
+            var brush = (i == selectedDeviceIndex) ? Brushes.LightGreen : Brushes.White;
+            g.FillEllipse(brush, x - 20, y - 20, 80, 40);
+            g.DrawEllipse(Pens.Black, x - 20, y - 20, 80, 40);
+
+            // Draw the device name
+            g.DrawString(device, new Font("Arial", 12), Brushes.Black, new PointF(x, y));
+        }
+
+        // Handle device selection with TUIO rotation
+        var marker = objectList.Values.FirstOrDefault();
+        if (marker != null)
+        {
+            for (int i = 0; i < students.Count; i++)
+            {
+                if (students[i].Marker == marker.SymbolID)
+                {
+                    handleTuioRotation(marker, i);
+                }
             }
 
         }
     }
+    private void handleTuioRotation(TuioObject marker, int index)
+    {
+        if (marker != null)
+        {
+            
+            double anglePerDevice = 360.0 / bluetoothDevices.Count;
+            double angle = marker.Angle * (180 / Math.PI); 
+
+            angle = angle % 360;
+            if (angle < 0) angle += 360;
+            
+            selectedDeviceIndex = (int)(angle / anglePerDevice) % bluetoothDevices.Count;
+            var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4);
+            if (marker4 != null)
+            {
+                double distance = Math.Sqrt(Math.Pow(marker.X - marker4.X, 2) + Math.Pow(marker.Y - marker4.Y, 2));
+                if (distance < 0.35)
+                {
+                    students[index].Bluetooth = bluetoothDevices[selectedDeviceIndex];
+                    currentStudent = index;
+                    screen = 1;
+                    hasNavigated = true;
+                }
+            }
+        }
+    }
     private void checkCollisonTrue()
     {
-        var marker10 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 10);
-        if(marker10 != null)
-        {
-            screen = 1;
-        }
+
         double distanceThreshold = 0.35;
 
-        // Get the objects for SymbolID 1 and 4
-        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1);
+        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == students[currentStudent].Marker);
         var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4); // Answer selection TUIO
 
         if (marker4 != null && marker1 != null)
         {
-            // Calculate the Euclidean distance between the two markers
             double distance = Math.Sqrt(Math.Pow(marker1.X - marker4.X, 2) + Math.Pow(marker1.Y - marker4.Y, 2));
             //Debug.WriteLine("Distance: " + distance);
-
-
-            if (distance >= distanceThreshold)
-            {
-                screen = 1;
-            }
-            else if (distance <= distanceThreshold && marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865)
+            if (distance <= distanceThreshold && marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865 && !hasNavigated)
             {
                 responseMessage = "Ashter katkout";
                 screen = 2;
                 addScore();
+                hasNavigated = true;
             }
-            else if (distance <= distanceThreshold && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865))
+            else if (distance <= distanceThreshold && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865) && !hasNavigated)
             {
                 responseMessage = "Try again";
                 screen = 2;
+                hasNavigated = true;
             }
-        }
+            else if (distance > distanceThreshold)
+            {
+                screen = 1;
+                hasNavigated = false;
+            }
 
-        if (gesture.Count > 0 && marker1 != null) 
+        }
+        if (gesture.Count > 0 && marker1 != null)
         {
-            
+
             if (gesture[gesture.Count - 1] == "ok" && marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865)
             {
                 responseMessage = "Ashter katkout";
@@ -783,10 +802,10 @@ public class TuioDemo : Form, TuioListener
             }
         }
 
-        
+
         if (gesture.Count > 0)
         {
-            if (gesture[gesture.Count - 1]=="next")
+            if (gesture[gesture.Count - 1] == "next")
             {
                 QuestionNumber += 1;
                 if (QuestionNumber > questions.Count)
@@ -861,7 +880,7 @@ public class TuioDemo : Form, TuioListener
         {
             while (client.Connected)  // Continuous loop for real-time handling
             {
-                
+
                 string message = await ReadMessageAsync(stream);
                 if (message == null)
                 {
@@ -887,7 +906,7 @@ public class TuioDemo : Form, TuioListener
                     {
                         answers.Add(answer);
                         //Debug.WriteLine("Answer " + answers.Count % 4 + ": " + answer);
-                    } 
+                    }
                 }
                 else if (message.StartsWith("IMG:"))
                 {
@@ -900,9 +919,12 @@ public class TuioDemo : Form, TuioListener
                 }
                 else if (message.StartsWith("BT:"))
                 {
-                    string device = message.Substring(3, 17);
-                    bluetoothDevices.Add(device);
-                    //Debug.WriteLine("Bluetooth Device " + bluetoothDevices.Count + ": " + device);
+                    string device = message.Substring(21);
+                    if (!bluetoothDevices.Contains(device))
+                    {
+                        bluetoothDevices.Add(device);
+                        Debug.WriteLine("Bluetooth Device " + bluetoothDevices.Count + ": " + device);
+                    }
                 }
                 if (gestureTimer != null)
                 {
@@ -926,19 +948,19 @@ public class TuioDemo : Form, TuioListener
         server.Start();
         Console.WriteLine("Server started...");
 
-        while (true)  // Continuous loop to keep server running
+        while (true)
         {
             TcpClient client = await server.AcceptTcpClientAsync();
             Console.WriteLine("Client connected.");
 
-            _ = ProcessClientAsync(client); // Process each client in a separate task
+            _ = ProcessClientAsync(client);
         }
     }
 
     public static void Main(string[] argv)
     {
         int port = 0;
-        
+
         switch (argv.Length)
         {
             case 1:
@@ -954,17 +976,14 @@ public class TuioDemo : Form, TuioListener
                 break;
         }
 
-        // Assuming TuioDemo is a defined class that accepts an integer port
         TuioDemo app = new TuioDemo(port);
 
-        // Start the server in a new background thread
         Thread systemThread = new Thread(() => StartServer().Wait())
         {
-            IsBackground = true // Ensures the thread stops when the main app closes
+            IsBackground = true
         };
         systemThread.Start();
 
-        // Run the main application
         Application.Run(app);
     }
 }
