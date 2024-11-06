@@ -85,7 +85,6 @@ public class TuioDemo : Form, TuioListener
     private string responseMessage = "";
     private int score = 0;
     private Dictionary<string, int> studentScores = new Dictionary<string, int>();
-    private string dummyStudentId = "123";
     private int currentStudent = 0;
     private bool hasNavigated = false;
 
