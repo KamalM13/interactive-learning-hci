@@ -81,13 +81,18 @@ def start_client(queue):
             if flag: break
             client_socket.close()
 
+def run_gesture2_detection():
+    # Run your gesture detection script
+    gesture_script = "media-pipe.py"
+    subprocess.Popen(["python", gesture_script])
+
 def run_gesture_detection():
     # Run your gesture detection script
     gesture_script = "live_ges.py"
     subprocess.Popen(["python", gesture_script])
 def run_reactivision():
     # Assuming reacTIVision is an executable or script
-    reactivision_executable = "F:/Uni/4th year/Hci/lab/Lab 2 - TUIO + GUI-20241020/reacTIVision-1.5.1-win64/reacTIVision.exe"
+    reactivision_executable = "C:/Users/KamalM12/Vscode/Hci Project/reacTIVision-1.5.1-win64/reacTIVision.exe"
     subprocess.Popen([reactivision_executable]) 
 
 def main():
@@ -95,12 +100,15 @@ def main():
     bluetooth_queue = queue.Queue()
     
     # Start the gesture recognition script
-    gesture_thread = threading.Thread(target=run_gesture_detection)
+    #gesture_thread = threading.Thread(target=run_gesture_detection)
     reactivision_thread = threading.Thread(target=run_reactivision)
-    gesture_thread.start()
+    gesture2_thread = threading.Thread(target=run_gesture2_detection)
+    #gesture_thread.start()
     reactivision_thread.start()
-    gesture_thread.join()
+    gesture2_thread.start()
+    #gesture_thread.join()
     reactivision_thread.join()
+    gesture2_thread.join()
 
     # Start the socket client in a separate thread
     client_thread = threading.Thread(target=start_client, args=(bluetooth_queue,))

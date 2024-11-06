@@ -5,7 +5,7 @@ import socket
 from dollarpy import Recognizer, Point
 
 # Load gesture templates
-with open("F:/Uni/4th year/Hci/project/interactive-learning-hci/python-sockets/gesture_templates.pkl", "rb") as f:
+with open("gesture_templates.pkl", "rb") as f:
     templates = pickle.load(f)
 
 recognizer = Recognizer(templates)
@@ -17,9 +17,9 @@ def landmarks_to_points(landmarks):
     return [Point(lm.x, lm.y) for lm in landmarks.landmark]
 
 # Initialize video capture and holistic model
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(2)
 
-with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+with mp_holistic.Holistic(min_detection_confidence=0.7, min_tracking_confidence=0.5) as holistic:
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -31,6 +31,7 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
 
         best_gesture = None
         best_score = 0
+        
 
         if results.left_hand_landmarks or results.right_hand_landmarks:
             landmarks = results.left_hand_landmarks or results.right_hand_landmarks

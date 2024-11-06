@@ -898,7 +898,7 @@ public class TuioDemo : Form, TuioListener
                     Console.WriteLine("Client disconnected.");
                     break;
                 }
-                Debug.WriteLine(message);
+                //Debug.WriteLine(message);
 
                 // Determine message type by prefix and process accordingly
                 if (message.StartsWith("Q:"))
@@ -934,7 +934,7 @@ public class TuioDemo : Form, TuioListener
                     if (!bluetoothDevices.Contains(device))
                     {
                         bluetoothDevices.Add(device);
-                        Debug.WriteLine("Bluetooth Device " + bluetoothDevices.Count + ": " + device);
+                        //Debug.WriteLine("Bluetooth Device " + bluetoothDevices.Count + ": " + device);
                     }
                 }
                 if (gestureTimer != null)
