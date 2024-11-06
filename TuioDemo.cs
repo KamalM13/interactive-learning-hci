@@ -487,7 +487,28 @@ public class TuioDemo : Form, TuioListener
     {
         students[currentStudent].Tscore += 5;
     }
+    private void drawScore(Graphics g)
+    {
+        int scoreIndicatorSize = 80;
+        int scoreIndicatorX = width - scoreIndicatorSize - 20;  
+        int scoreIndicatorY = 20;
 
+        using (Pen scorePen = new Pen(Color.FromArgb(100, 150, 255), 8))
+        {
+            g.DrawEllipse(Pens.Gray, scoreIndicatorX, scoreIndicatorY, scoreIndicatorSize, scoreIndicatorSize);
+
+            float sweepAngle = (students[currentStudent].Tscore / 10) * 360;
+            g.DrawArc(scorePen, scoreIndicatorX, scoreIndicatorY, scoreIndicatorSize, scoreIndicatorSize, -90, sweepAngle);
+        }
+
+        var scoreFont = new Font("Arial", 14, FontStyle.Bold);
+        string scoreText = $"{students[currentStudent].Tscore}%";
+        var scoreTextSize = g.MeasureString(scoreText, scoreFont);
+        float scoreTextX = scoreIndicatorX + (scoreIndicatorSize - scoreTextSize.Width) / 2;
+        float scoreTextY = scoreIndicatorY + (scoreIndicatorSize - scoreTextSize.Height) / 2;
+
+        g.DrawString(scoreText, scoreFont, Brushes.Black, new PointF(scoreTextX, scoreTextY));
+    }
     private void changeQuestionBackground(PaintEventArgs pevent,
         Graphics g,
         SolidBrush c1Brush,
@@ -495,6 +516,7 @@ public class TuioDemo : Form, TuioListener
         SolidBrush c3Brush,
         SolidBrush c4Brush)
     {
+        
         Brush[] quadrantBrushes = { c1Brush, c2Brush, c3Brush, c4Brush };
 
         int midWidth = width / 2;
@@ -589,6 +611,7 @@ public class TuioDemo : Form, TuioListener
             float questionTextY = boxY + (questionBoxHeight - questionTextSize.Height) / 2;
             g.DrawString(questions[QuestionNumber], questionFont, Brushes.Black, new PointF(questionTextX, questionTextY));
         }
+        drawScore(g);
     }
 
 
