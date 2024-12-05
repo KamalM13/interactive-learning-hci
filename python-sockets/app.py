@@ -43,6 +43,9 @@ def send_data(connection, question, answers, image_paths, bluetooth_devices=[], 
         flag = True
     if gesture_data:
         send_message(connection, f"GESTURE:{gesture_data}")
+    for correct_answer in correct_answers:
+        send_message(connection, f"CORRECT_ANSWER:{correct_answer}")
+    
     print("All data sent.")
     return flag 
 
@@ -55,16 +58,71 @@ def start_client(queue):
             client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             client_socket.connect(("localhost", 12345))
 
-            # Define the question, answers, and image paths
-            question = ["What is the capital of Egypt?", "What animal lays eggs?", "Which animal can fly?", 
-                        "What do plants need to grow?", "What do bees make?"]
-            answers = ["Aswan", "Cairo", "Giza", "Behira", "Cow", "Chicken", "Fox", "Dog",
-                       "Elephant", "Bird", "Dog", "Cat", "Milk", "Water", "Sand", "Rocks", 
-                       "Milk", "Honey", "Bread", "Juice"]
-            image_paths = ["cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg", "chicken.jpg", "cow.jpg", "fox.jpg", "dog.jpg",
-                           "elephant.jpg", "bird.jpg", "dog.jpg", "cat.jpg", "milk.jpg", "water.jpg", "sand.jpg", "rock.jpg", 
-                           "milk.jpg", "honey.jpg", "bread.jpg", "juice.jpg"]
+           
+            # Define the questions, answers, and image paths with different difficulty levels
+            questions_easy = [
+                "What is the capital of Egypt?", 
+                "What animal lays eggs?", 
+                "What is the largest ocean on Earth?", 
+                "What is 2 + 2?", 
+                "Which color is the sky?"
+            ]
+            questions_medium = [
+                "Which animal can fly?", 
+                "What do plants need to grow?", 
+                "How many continents are there?", 
+                "Who was the first president of the USA?", 
+                "What is the chemical symbol for water?"
+            ]
+            questions_hard = [
+                "What do bees make?", 
+                "What is the square root of 1024?", 
+                "Who developed the theory of relativity?", 
+                "What is the capital of Australia?", 
+                "What is the atomic number of Carbon?"
+            ]
+
+            answers_easy = [
+                ["Aswan", "Cairo", "Giza", "Behira"], 
+                ["Cow", "Chicken", "Fox", "Dog"], 
+                ["Atlantic", "Pacific", "Indian", "Arctic"], 
+                ["3", "4", "5", "6"], 
+                ["Blue", "Red", "Green", "Yellow"]
+            ]
+            answers_medium = [
+                ["Cow", "Chicken", "Bird", "Bat"], 
+                ["Milk", "Water", "Sunlight", "Soil"], 
+                ["5", "6", "7", "8"], 
+                ["George Washington", "Abraham Lincoln", "Thomas Jefferson", "John Adams"], 
+                ["H2O", "CO2", "O2", "N2"]
+            ]
+            answers_hard = [
+                ["Honey", "Milk", "Bread", "Juice"], 
+                ["30", "32", "33", "35"], 
+                ["Newton", "Einstein", "Galileo", "Darwin"], 
+                ["Sydney", "Canberra", "Melbourne", "Brisbane"], 
+                ["6", "8", "12", "14"]
+            ]
             
+            correct_answers_easy = [
+                "Cairo", "Chicken", "Pacific", "4", "Blue"
+            ]
+            correct_answers_medium = [
+                "Bird", "Sunlight", "7", "George Washington", "H2O"
+            ]
+            correct_answers_hard = [
+                "Honey", "32", "Einstein", "Canberra", "6"
+            ]
+
+            image_paths_easy = [
+                "cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg", "sky.jpg"
+            ]
+            image_paths_medium = [
+                "chicken.jpg", "cow.jpg", "fox.jpg", "dog.jpg", "bird.jpg"
+            ]
+            image_paths_hard = [
+                "milk.jpg", "water.jpg", "honey.jpg", "juice.jpg", "atom.jpg"
+            ]
             # Continuously listen for new Bluetooth devices in the queue
             while True:
                 try:
@@ -72,11 +130,23 @@ def start_client(queue):
                     bluetooth_devices = queue.get_nowait()
                     # Send data with the latest Bluetooth information
                     send_data(
-                        client_socket, question, answers, image_paths, bluetooth_devices, flag=flag
+                        client_socket, 
+                        questions_easy + questions_medium + questions_hard, 
+                        answers_easy + answers_medium + answers_hard, 
+                        correct_answers_easy + correct_answers_medium + correct_answers_hard,
+                        image_paths_easy + image_paths_medium + image_paths_hard, 
+                        bluetooth_devices, flag=flag
                     )
                     if(flag): break
                 except Empty:
-                    send_data(client_socket, question, answers, image_paths,flag=flag)
+                    send_data(
+                        client_socket, 
+                        questions_easy + questions_medium + questions_hard, 
+                        answers_easy + answers_medium + answers_hard, 
+                        correct_answers_easy + correct_answers_medium + correct_answers_hard,
+                        image_paths_easy + image_paths_medium + image_paths_hard,
+                        flag=flag
+                    )
                     if(flag): break
                 time.sleep(0.5)
         except Exception as e:

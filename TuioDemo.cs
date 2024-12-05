@@ -646,7 +646,7 @@ public class TuioDemo : Form, TuioListener
     }
     private void checkLogin()
     {
-        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1); // Student Login
+          /* var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1); // Student Login
         if (marker1 != null)
         {
             for (int i = 0; i < students.Count; i++)
@@ -657,7 +657,9 @@ public class TuioDemo : Form, TuioListener
                     screen = 3;
                 }
             }
+
         }
+          */
     }
     private void studentRegister()
     {
