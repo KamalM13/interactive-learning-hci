@@ -162,7 +162,7 @@ public class TuioDemo : Form, TuioListener
 
         client = new TuioClient(port);
         client.addTuioListener(this);
-
+        LoadQuestions();
         client.connect();
     }
 
@@ -536,41 +536,42 @@ public class TuioDemo : Form, TuioListener
 
         g.DrawString(scoreText, scoreFont, Brushes.Black, new PointF(scoreTextX, scoreTextY));
     }
-      private Question GetCurrentQuestion()
-   {
-      List<Question> selectedQuestions = difficultyLevel == Difficulty.Easy ? easyQuestions :
-                                          difficultyLevel == Difficulty.Medium ? mediumQuestions : hardQuestions;
-      return selectedQuestions[currentQuestionIndex];
-   }
+    // Method to get the current question based on the difficulty
+    private Question GetCurrentQuestion()
+    {
+        List<Question> selectedQuestions = difficultyLevel == Difficulty.Easy ? easyQuestions :
+                                            difficultyLevel == Difficulty.Medium ? mediumQuestions : hardQuestions;
+        return selectedQuestions[currentQuestionIndex];
+    }
 
-  private void LoadQuestions()
-   {
-      // Example questions
-      easyQuestions.Add(new Question("What is 2+2?", new List<string> { "4", "5", "6", "7" }, "4", "easy"));
-      easyQuestions.Add(new Question("What color is the sky?", new List<string> { "Red", "Blue", "Green", "Yellow" }, "Blue", "easy"));
-      easyQuestions.Add(new Question("Which is the largest animal?", new List<string> { "Elephant", "Whale", "Shark", "Lion" }, "Whale", "easy"));
-      easyQuestions.Add(new Question("What is the capital of France?", new List<string> { "Berlin", "Madrid", "Paris", "Rome" }, "Paris", "easy"));
-      easyQuestions.Add(new Question("What is 3+5?", new List<string> { "8", "7", "9", "6" }, "8", "easy"));
+    private void LoadQuestions()
+    {
+        // Example questions
+        easyQuestions.Add(new Question("What is 2+2?", new List<string> { "4", "5", "6", "7" }, "4", "easy"));
+        easyQuestions.Add(new Question("What color is the sky?", new List<string> { "Red", "Blue", "Green", "Yellow" }, "Blue", "easy"));
+        easyQuestions.Add(new Question("Which is the largest animal?", new List<string> { "Elephant", "Whale", "Shark", "Lion" }, "Whale", "easy"));
+        easyQuestions.Add(new Question("What is the capital of France?", new List<string> { "Berlin", "Madrid", "Paris", "Rome" }, "Paris", "easy"));
+        easyQuestions.Add(new Question("What is 3+5?", new List<string> { "8", "7", "9", "6" }, "8", "easy"));
 
-      mediumQuestions.Add(new Question("What is the square root of 16?", new List<string> { "2", "4", "6", "8" }, "4", "medium"));
-      mediumQuestions.Add(new Question("Who discovered gravity?", new List<string> { "Einstein", "Newton", "Galileo", "Tesla" }, "Newton", "medium"));
-      mediumQuestions.Add(new Question("What is the chemical symbol for water?", new List<string> { "H2O", "CO2", "O2", "N2" }, "H2O", "medium"));
-      mediumQuestions.Add(new Question("What is the largest planet in our solar system?", new List<string> { "Earth", "Mars", "Jupiter", "Saturn" }, "Jupiter", "medium"));
-      mediumQuestions.Add(new Question("Which element has the atomic number 1?", new List<string> { "Hydrogen", "Oxygen", "Carbon", "Helium" }, "Hydrogen", "medium"));
+        mediumQuestions.Add(new Question("What is the square root of 16?", new List<string> { "2", "4", "6", "8" }, "4", "medium"));
+        mediumQuestions.Add(new Question("Who discovered gravity?", new List<string> { "Einstein", "Newton", "Galileo", "Tesla" }, "Newton", "medium"));
+        mediumQuestions.Add(new Question("What is the chemical symbol for water?", new List<string> { "H2O", "CO2", "O2", "N2" }, "H2O", "medium"));
+        mediumQuestions.Add(new Question("What is the largest planet in our solar system?", new List<string> { "Earth", "Mars", "Jupiter", "Saturn" }, "Jupiter", "medium"));
+        mediumQuestions.Add(new Question("Which element has the atomic number 1?", new List<string> { "Hydrogen", "Oxygen", "Carbon", "Helium" }, "Hydrogen", "medium"));
 
-      hardQuestions.Add(new Question("What is the derivative of x^2?", new List<string> { "2x", "x", "x^2", "1" }, "2x", "hard"));
-      hardQuestions.Add(new Question("What is the capital of Mongolia?", new List<string> { "Ulaanbaatar", "Astana", "Tashkent", "Bishkek" }, "Ulaanbaatar", "hard"));
-      hardQuestions.Add(new Question("Who wrote 'War and Peace'?", new List<string> { "Tolstoy", "Dostoevsky", "Pushkin", "Turgenev" }, "Tolstoy", "hard"));
-      hardQuestions.Add(new Question("What is the square root of 256?", new List<string> { "16", "14", "12", "10" }, "16", "hard"));
-      hardQuestions.Add(new Question("What is the longest river in the world?", new List<string> { "Amazon", "Nile", "Yangtze", "Mississippi" }, "Nile", "hard"));
-   }
+        hardQuestions.Add(new Question("What is the derivative of x^2?", new List<string> { "2x", "x", "x^2", "1" }, "2x", "hard"));
+        hardQuestions.Add(new Question("What is the capital of Mongolia?", new List<string> { "Ulaanbaatar", "Astana", "Tashkent", "Bishkek" }, "Ulaanbaatar", "hard"));
+        hardQuestions.Add(new Question("Who wrote 'War and Peace'?", new List<string> { "Tolstoy", "Dostoevsky", "Pushkin", "Turgenev" }, "Tolstoy", "hard"));
+        hardQuestions.Add(new Question("What is the square root of 256?", new List<string> { "16", "14", "12", "10" }, "16", "hard"));
+        hardQuestions.Add(new Question("What is the longest river in the world?", new List<string> { "Amazon", "Nile", "Yangtze", "Mississippi" }, "Nile", "hard"));
+    }
     private void changeQuestionBackground(PaintEventArgs pevent,
         Graphics g,
         SolidBrush c1Brush,
         SolidBrush c2Brush,
         SolidBrush c3Brush,
         SolidBrush c4Brush)
-     {
+    {
         
         Brush[] quadrantBrushes = { c1Brush, c2Brush, c3Brush, c4Brush };
 
@@ -702,7 +703,7 @@ public class TuioDemo : Form, TuioListener
     }
     private void checkLogin()
     {
-          /* var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1); // Student Login
+        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1); // Student Login
         if (marker1 != null)
         {
             for (int i = 0; i < students.Count; i++)
@@ -713,9 +714,7 @@ public class TuioDemo : Form, TuioListener
                     screen = 3;
                 }
             }
-
         }
-          */
     }
     private void studentRegister()
     {
@@ -822,7 +821,6 @@ public class TuioDemo : Form, TuioListener
     }
     private void checkCollisonTrue()
     {
-
         double distanceThreshold = 0.25;
 
         var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == students[currentStudent].Marker);
@@ -831,94 +829,93 @@ public class TuioDemo : Form, TuioListener
         if (marker4 != null && marker1 != null)
         {
             double distance = Math.Sqrt(Math.Pow(marker1.X - marker4.X, 2) + Math.Pow(marker1.Y - marker4.Y, 2));
-            //Debug.WriteLine("Distance: " + distance);
+            // Debug.WriteLine("Distance: " + distance);
+
             if (distance <= distanceThreshold && marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865 && !hasNavigated)
             {
-                responseMessage = "Ashter katkout";
-                screen = 2;
-                addScore();
-                hasNavigated = true;
+                responseMessage = "Ashter katkout"; // Correct answer message
+                screen = 2; // Move to the next screen
+                addScore(); // Increment the score
+                hasNavigated = true; // Prevent further triggers
+                                     // Handle difficulty-specific actions
                 HandleDifficulty();
             }
             else if (distance <= distanceThreshold && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865) && !hasNavigated)
             {
-                responseMessage = "Try again";
-                screen = 2;
-                hasNavigated = true;
+                responseMessage = "Try again"; // Incorrect answer message
+                screen = 2; // Stay on the same screen for retry
+                hasNavigated = true; // Prevent further triggers
             }
             else if (distance > distanceThreshold)
             {
                 screen = 1;
                 hasNavigated = false;
             }
-
         }
+
         if (gesture.Count > 0 && marker1 != null)
         {
-
+            // Handle gesture for "ok"
             if (gesture[gesture.Count - 1] == "ok" && marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865)
             {
-                responseMessage = "Ashter katkout";
-                screen = 2;
-                addScore();
+                responseMessage = "Ashter katkout"; 
+                screen = 2; // Move to the next screen
+                addScore(); // Increment the score
+                            // Handle difficulty-specific actions
                 HandleDifficulty();
             }
             else if (gesture[gesture.Count - 1] == "ok" && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865))
             {
-                responseMessage = "Try again";
-                screen = 2;
+                responseMessage = "Try again"; 
+                screen = 2; // Stay on the same screen for retry
             }
-            if (gesture[gesture.Count - 1] == "stop")
-            {
-                screen = 5;
-            }
-        }
-        if (gesture.Count > 0)
-        {
+
+            // Handle gesture for "stop"
             if (gesture[gesture.Count - 1] == "stop")
             {
                 screen = 5;
             }
         }
 
-
         if (gesture.Count > 0)
         {
+            // Handle gesture for "next" (next question)
             if (gesture[gesture.Count - 1] == "next")
             {
                 QuestionNumber += 1;
                 if (QuestionNumber > questions.Count)
                     QuestionNumber = 0;
             }
+            // Handle gesture for "previous" (previous question)
             if (gesture[gesture.Count - 1] == "previous")
             {
                 QuestionNumber -= 1;
                 if (QuestionNumber < 0)
                     QuestionNumber = questions.Count - 1;
             }
-
         }
     }
-// Method to handle difficulty levels and actions after answering a question
-private void HandleDifficulty()
-{
-    if (currentDifficulty == Difficulty.Easy)
+
+    // Method to handle difficulty levels and actions after answering a question
+    private void HandleDifficulty()
     {
-        score += 1; // Increase score for easy difficulty
-        responseMessage = "Well done! You answered correctly!";
+        if (currentDifficulty == Difficulty.Easy)
+        {
+            score += 1; // Increase score for easy difficulty
+            responseMessage = "Well done! You answered correctly!";
+        }
+        else if (currentDifficulty == Difficulty.Medium)
+        {
+           
+            score += 2; // Increase score for medium difficulty
+            responseMessage = "Good job! You are doing well!";
+        }
+        else if (currentDifficulty == Difficulty.Hard)
+        {
+            score += 3; // Increase score for hard difficulty
+            responseMessage = "Excellent! You're mastering this!";
+        }
     }
-    else if (currentDifficulty == Difficulty.Medium)
-    {
-       
-        score += 2; // Increase score for medium difficulty
-        responseMessage = "Good job! You are doing well!";
-    }
-    else if (currentDifficulty == Difficulty.Hard)
-    {
-        score += 3; // Increase score for hard difficulty
-        responseMessage = "Excellent! You're mastering this!";
-    }
-}
 
 
     private void exitRun()
