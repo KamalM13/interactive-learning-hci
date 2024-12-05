@@ -88,6 +88,34 @@ public class TuioDemo : Form, TuioListener
     private int currentStudent = 0;
     private bool hasNavigated = false;
 
+    private static List<Question> easyQuestions = new List<Question>();
+    private static List<Question> mediumQuestions = new List<Question>();
+    private static List<Question> hardQuestions = new List<Question>();
+    private static int currentQuestionIndex = 0;
+
+    public class Question
+    {
+        public string Text { get; set; }
+        public List<string> Answers { get; set; }
+        public string CorrectAnswer { get; set; }
+        public string Difficulty { get; set; } // "easy", "medium", or "hard"
+
+        public Question(string text, List<string> answers, string correctAnswer, string difficulty)
+        {
+            Text = text;
+            Answers = answers;
+            CorrectAnswer = correctAnswer;
+            Difficulty = difficulty;
+        }
+    }
+    public enum Difficulty
+    {
+        Easy,
+        Medium,
+        Hard
+    }
+    private Difficulty difficultyLevel;
+    private Difficulty currentDifficulty = Difficulty.Easy; // Set default to Easy, or as needed
     private static List<string> questions = new List<string>();
     private static List<string> imagePaths = new List<string>();
     private static List<string> answers = new List<string>();
@@ -508,13 +536,41 @@ public class TuioDemo : Form, TuioListener
 
         g.DrawString(scoreText, scoreFont, Brushes.Black, new PointF(scoreTextX, scoreTextY));
     }
+      private Question GetCurrentQuestion()
+   {
+      List<Question> selectedQuestions = difficultyLevel == Difficulty.Easy ? easyQuestions :
+                                          difficultyLevel == Difficulty.Medium ? mediumQuestions : hardQuestions;
+      return selectedQuestions[currentQuestionIndex];
+   }
+
+  private void LoadQuestions()
+   {
+      // Example questions
+      easyQuestions.Add(new Question("What is 2+2?", new List<string> { "4", "5", "6", "7" }, "4", "easy"));
+      easyQuestions.Add(new Question("What color is the sky?", new List<string> { "Red", "Blue", "Green", "Yellow" }, "Blue", "easy"));
+      easyQuestions.Add(new Question("Which is the largest animal?", new List<string> { "Elephant", "Whale", "Shark", "Lion" }, "Whale", "easy"));
+      easyQuestions.Add(new Question("What is the capital of France?", new List<string> { "Berlin", "Madrid", "Paris", "Rome" }, "Paris", "easy"));
+      easyQuestions.Add(new Question("What is 3+5?", new List<string> { "8", "7", "9", "6" }, "8", "easy"));
+
+      mediumQuestions.Add(new Question("What is the square root of 16?", new List<string> { "2", "4", "6", "8" }, "4", "medium"));
+      mediumQuestions.Add(new Question("Who discovered gravity?", new List<string> { "Einstein", "Newton", "Galileo", "Tesla" }, "Newton", "medium"));
+      mediumQuestions.Add(new Question("What is the chemical symbol for water?", new List<string> { "H2O", "CO2", "O2", "N2" }, "H2O", "medium"));
+      mediumQuestions.Add(new Question("What is the largest planet in our solar system?", new List<string> { "Earth", "Mars", "Jupiter", "Saturn" }, "Jupiter", "medium"));
+      mediumQuestions.Add(new Question("Which element has the atomic number 1?", new List<string> { "Hydrogen", "Oxygen", "Carbon", "Helium" }, "Hydrogen", "medium"));
+
+      hardQuestions.Add(new Question("What is the derivative of x^2?", new List<string> { "2x", "x", "x^2", "1" }, "2x", "hard"));
+      hardQuestions.Add(new Question("What is the capital of Mongolia?", new List<string> { "Ulaanbaatar", "Astana", "Tashkent", "Bishkek" }, "Ulaanbaatar", "hard"));
+      hardQuestions.Add(new Question("Who wrote 'War and Peace'?", new List<string> { "Tolstoy", "Dostoevsky", "Pushkin", "Turgenev" }, "Tolstoy", "hard"));
+      hardQuestions.Add(new Question("What is the square root of 256?", new List<string> { "16", "14", "12", "10" }, "16", "hard"));
+      hardQuestions.Add(new Question("What is the longest river in the world?", new List<string> { "Amazon", "Nile", "Yangtze", "Mississippi" }, "Nile", "hard"));
+   }
     private void changeQuestionBackground(PaintEventArgs pevent,
         Graphics g,
         SolidBrush c1Brush,
         SolidBrush c2Brush,
         SolidBrush c3Brush,
         SolidBrush c4Brush)
-    {
+     {
         
         Brush[] quadrantBrushes = { c1Brush, c2Brush, c3Brush, c4Brush };
 
@@ -782,6 +838,7 @@ public class TuioDemo : Form, TuioListener
                 screen = 2;
                 addScore();
                 hasNavigated = true;
+                HandleDifficulty();
             }
             else if (distance <= distanceThreshold && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865) && !hasNavigated)
             {
@@ -804,6 +861,7 @@ public class TuioDemo : Form, TuioListener
                 responseMessage = "Ashter katkout";
                 screen = 2;
                 addScore();
+                HandleDifficulty();
             }
             else if (gesture[gesture.Count - 1] == "ok" && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865))
             {
@@ -841,6 +899,27 @@ public class TuioDemo : Form, TuioListener
 
         }
     }
+// Method to handle difficulty levels and actions after answering a question
+private void HandleDifficulty()
+{
+    if (currentDifficulty == Difficulty.Easy)
+    {
+        score += 1; // Increase score for easy difficulty
+        responseMessage = "Well done! You answered correctly!";
+    }
+    else if (currentDifficulty == Difficulty.Medium)
+    {
+       
+        score += 2; // Increase score for medium difficulty
+        responseMessage = "Good job! You are doing well!";
+    }
+    else if (currentDifficulty == Difficulty.Hard)
+    {
+        score += 3; // Increase score for hard difficulty
+        responseMessage = "Excellent! You're mastering this!";
+    }
+}
+
 
     private void exitRun()
     {
