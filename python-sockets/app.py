@@ -6,6 +6,8 @@ import queue
 from queue import Empty
 import bluetooth
 import subprocess
+import Face_Recognition
+import Emotion_Recognition
 
 def scan_bluetooth_devices(queue):
     print("Starting continuous Bluetooth scan...")
@@ -31,7 +33,8 @@ def send_message(connection, message):
     connection.recv(1)  # Expect a single-byte acknowledgment
 
 
-def send_data(connection, question, answers, image_paths, bluetooth_devices=[], gesture_data=None, flag = False):
+def send_data(connection, loggedInUserId, question, answers, image_paths, bluetooth_devices=[], gesture_data=None, flag=False):
+    send_message(connection, f"ID:{loggedInUserId}")
     for q in question:
         send_message(connection, f"Q:{q}")
     for answer in answers:
@@ -51,110 +54,119 @@ def send_data(connection, question, answers, image_paths, bluetooth_devices=[], 
 
 from queue import Empty
 
+def login():
+    users = [(1, "bin\Debug\person.jpg")]
+    usersImgEncodings = Face_Recognition.createImageEncodings(users)
+    mathchIndex = Face_Recognition.login(usersImgEncodings)
+    return mathchIndex
+
 def start_client(queue):
     flag = False
-    while True:
-        try:
-            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client_socket.connect(("localhost", 12345))
+    loggedInUserId = login()
+    if loggedInUserId is not None:
+        while True:
+            try:
+                client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                client_socket.connect(("localhost", 12345))
+                # Define the questions, answers, and image paths with different difficulty levels
+                questions_easy = [
+                    "What is the capital of Egypt?", 
+                    "What animal lays eggs?", 
+                    "What is the largest ocean on Earth?", 
+                    "What is 2 + 2?", 
+                    "Which color is the sky?"
+                ]
+                questions_medium = [
+                    "Which animal can fly?", 
+                    "What do plants need to grow?", 
+                    "How many continents are there?", 
+                    "What is the longest river in the world?", 
+                    "What is the chemical symbol for water?"
+                ]
+                questions_hard = [
+                    "What do bees make?", 
+                    "What is the biggest mountain in the world?", 
+                    "What is the powerhouse of the cell?", 
+                    "What is the largest continent by area?", 
+                    "What is the atomic number of Carbon?"
+                ]
 
-           
-            # Define the questions, answers, and image paths with different difficulty levels
-            questions_easy = [
-                "What is the capital of Egypt?", 
-                "What animal lays eggs?", 
-                "What is the largest ocean on Earth?", 
-                "What is 2 + 2?", 
-                "Which color is the sky?"
-            ]
-            questions_medium = [
-                "Which animal can fly?", 
-                "What do plants need to grow?", 
-                "How many continents are there?", 
-                "Who was the first president of the USA?", 
-                "What is the chemical symbol for water?"
-            ]
-            questions_hard = [
-                "What do bees make?", 
-                "What is the square root of 1024?", 
-                "Who developed the theory of relativity?", 
-                "What is the capital of Australia?", 
-                "What is the atomic number of Carbon?"
-            ]
+                answers_easy = [
+                    ["Aswan", "Cairo", "Giza", "Behira"], 
+                    ["Cow", "Chicken", "Fox", "Dog"], 
+                    ["Atlantic", "Pacific", "Indian", "Arctic"], 
+                    ["3", "4", "5", "6"], 
+                    ["Blue", "Red", "Green", "Yellow"]
+                ]
+                answers_medium = [
+                    ["Cow", "Chicken", "Bird", "Bat"], 
+                    ["Milk", "Water", "Sunlight", "Soil"], 
+                    ["5", "6", "7", "8"], 
+                    ["Nile River", "Amazon River", "Yangtze River", "Mississippi River"], 
+                    ["H2O", "CO2", "O2", "N2"]
+                ]
+                answers_hard = [
+                    ["Honey", "Milk", "Bread", "Juice"], 
+                    ["Mount Everest", "K2", "Kangchenjunga", "Mount Kilimanjaro"], 
+                    ["Nucleus", "Mitochondria", "Ribosome", "Golgi apparatus"], 
+                    ["Africa", "Asia", "North America", "Europe"], 
+                    ["6", "8", "12", "14"]
+                ]
 
-            answers_easy = [
-                ["Aswan", "Cairo", "Giza", "Behira"], 
-                ["Cow", "Chicken", "Fox", "Dog"], 
-                ["Atlantic", "Pacific", "Indian", "Arctic"], 
-                ["3", "4", "5", "6"], 
-                ["Blue", "Red", "Green", "Yellow"]
-            ]
-            answers_medium = [
-                ["Cow", "Chicken", "Bird", "Bat"], 
-                ["Milk", "Water", "Sunlight", "Soil"], 
-                ["5", "6", "7", "8"], 
-                ["George Washington", "Abraham Lincoln", "Thomas Jefferson", "John Adams"], 
-                ["H2O", "CO2", "O2", "N2"]
-            ]
-            answers_hard = [
-                ["Honey", "Milk", "Bread", "Juice"], 
-                ["30", "32", "33", "35"], 
-                ["Newton", "Einstein", "Galileo", "Darwin"], 
-                ["Sydney", "Canberra", "Melbourne", "Brisbane"], 
-                ["6", "8", "12", "14"]
-            ]
-            
-            correct_answers_easy = [
-                "Cairo", "Chicken", "Pacific", "4", "Blue"
-            ]
-            correct_answers_medium = [
-                "Bird", "Sunlight", "7", "George Washington", "H2O"
-            ]
-            correct_answers_hard = [
-                "Honey", "32", "Einstein", "Canberra", "6"
-            ]
+                correct_answers_easy = [
+                    "Cairo", "Chicken", "Pacific", "4", "Blue"
+                ]
+                correct_answers_medium = [
+                    "Bird", "Sunlight", "7", "Nile River", "H2O"
+                ]
+                correct_answers_hard = [
+                    "Honey", "Mount Everest", "Mitochondria", "Asia", "6"
+                ]
 
-            image_paths_easy = [
-                "cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg", "sky.jpg"
-            ]
-            image_paths_medium = [
-                "chicken.jpg", "cow.jpg", "fox.jpg", "dog.jpg", "bird.jpg"
-            ]
-            image_paths_hard = [
-                "milk.jpg", "water.jpg", "honey.jpg", "juice.jpg", "atom.jpg"
-            ]
-            # Continuously listen for new Bluetooth devices in the queue
-            while True:
-                try:
-                    # Attempt to get Bluetooth devices without blocking
-                    bluetooth_devices = queue.get_nowait()
-                    # Send data with the latest Bluetooth information
-                    send_data(
-                        client_socket, 
-                        questions_easy + questions_medium + questions_hard, 
-                        answers_easy + answers_medium + answers_hard, 
-                        correct_answers_easy + correct_answers_medium + correct_answers_hard,
-                        image_paths_easy + image_paths_medium + image_paths_hard, 
-                        bluetooth_devices, flag=flag
-                    )
-                    if(flag): break
-                except Empty:
-                    send_data(
-                        client_socket, 
-                        questions_easy + questions_medium + questions_hard, 
-                        answers_easy + answers_medium + answers_hard, 
-                        correct_answers_easy + correct_answers_medium + correct_answers_hard,
-                        image_paths_easy + image_paths_medium + image_paths_hard,
-                        flag=flag
-                    )
-                    if(flag): break
-                time.sleep(0.5)
-        except Exception as e:
-            print(f"Connection failed: {e}")
-            time.sleep(2)
-        finally:
-            if flag: break
-            client_socket.close()
+                # Updated image paths corresponding to the correct answers
+                image_paths_easy = [
+                    "bin\\Debug\\cairo.jpg", "bin\\Debug\\chicken.jpg", "bin\\Debug\\Pacific_ocean.jpg", "bin\\Debug\\four.jpg", "bin\\Debug\\Blue.jpg"
+                ]
+                image_paths_medium = [
+                    "bin\\Debug\\bird.jpg", "bin\\Debug\\sunlight.jpg", "bin\\Debug\\seven.jpg", "bin\\Debug\\Nile.jpg", "bin\\Debug\\h2o.jpg"
+                ]
+                image_paths_hard = [
+                    "bin\\Debug\\honey.jpg", "bin\\Debug\\Mount_Everest.jpg", "bin\\Debug\\Mitochondria.jpg", "bin\\Debug\\Asia.jpg", "bin\\Debug\\six.jpg"
+                ]
+                # Continuously listen for new Bluetooth devices in the queue
+                while True:
+                    try:
+                        # Attempt to get Bluetooth devices without blocking
+                        bluetooth_devices = queue.get_nowait()
+                        # Send data with the latest Bluetooth information
+                        send_data(
+                            client_socket, loggedInUserId,
+                            questions_easy + questions_medium + questions_hard, 
+                            answers_easy + answers_medium + answers_hard, 
+                            correct_answers_easy + correct_answers_medium + correct_answers_hard,
+                            image_paths_easy + image_paths_medium + image_paths_hard, 
+                            bluetooth_devices, flag=flag
+                        )
+                        if(flag): break
+                    except Empty:
+                        send_data(
+                            client_socket, loggedInUserId,
+                            questions_easy + questions_medium + questions_hard, 
+                            answers_easy + answers_medium + answers_hard, 
+                            correct_answers_easy + correct_answers_medium + correct_answers_hard,
+                            image_paths_easy + image_paths_medium + image_paths_hard,
+                            flag=flag
+                        )
+                        if(flag): break
+                    time.sleep(0.5)
+            except Exception as e:
+                print(f"Connection failed: {e}")
+                time.sleep(2)
+            finally:
+                if flag: break
+                client_socket.close()
+    else:
+        print("No user recognized or login process terminated.")
 
 def run_gesture2_detection():
     # Run your gesture detection script

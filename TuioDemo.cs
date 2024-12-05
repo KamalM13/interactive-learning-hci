@@ -34,8 +34,9 @@ using System.Threading.Tasks;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Timers;
+using System.Text.Json;
 
-public class Student
+public class User
 {
     public int StudentId { get; set; }
     public string Name { get; set; }
@@ -48,8 +49,10 @@ public class Student
 
     public int Marker { get; set; }
 
+    public bool isStudent { get; set; }
+
     // Constructor
-    public Student(int studentId, string name, string bluetooth, int marker)
+    public User(int studentId, string name, string bluetooth, int marker, bool isStudent)
     {
         StudentId = studentId;
         Name = name;
@@ -57,6 +60,7 @@ public class Student
         Tscore = 0;
         Bluetooth = bluetooth;
         Marker = marker;
+        isStudent = isStudent;
     }
 }
 
@@ -96,19 +100,23 @@ public class TuioDemo : Form, TuioListener
     public class Question
     {
         public string Text { get; set; }
-        public List<string> Answers { get; set; }
+        public List<string> Choices { get; set; }
+        public List<string> ImagePaths { get; set; } // Updated
         public string CorrectAnswer { get; set; }
-        public string Difficulty { get; set; } // "easy", "medium", or "hard"
+        public string Difficulty { get; set; }
 
-        public Question(string text, List<string> answers, string correctAnswer, string difficulty)
+        public Question(string text, List<string> choices, List<string> imagePaths, string correctAnswer, string difficulty)
         {
             Text = text;
-            Answers = answers;
+            Choices = choices;
+            ImagePaths = imagePaths; // Updated
             CorrectAnswer = correctAnswer;
             Difficulty = difficulty;
         }
     }
-    public enum Difficulty
+
+
+public enum Difficulty
     {
         Easy,
         Medium,
@@ -120,11 +128,11 @@ public class TuioDemo : Form, TuioListener
     private static List<string> imagePaths = new List<string>();
     private static List<string> answers = new List<string>();
     private static List<string> bluetoothDevices = new List<string>();
-    private List<Student> students = new List<Student>
+    private List<User> users = new List<User>
     {
-    new Student(1, "Kamal Mohamed", "CC:F9:F0:CD:B9:DC",0) { Attended = false, Tscore = 0 },
-    new Student(2, "Jane Smith", "", 0) { Attended = true, Tscore = 5 },
-    new Student(3, "Alex Brown", "", 0) { Attended = false, Tscore = 0 }
+    new User(1, "Kamal Mohamed", "CC:F9:F0:CD:B9:DC",0, false) { Attended = false, Tscore = 0 },
+    new User(2, "Jane Smith", "", 0, true) { Attended = true, Tscore = 5 },
+    new User(3, "Alex Brown", "", 0, true) { Attended = false, Tscore = 0 }
     };
 
     Font font = new Font("Arial", 10.0f);
@@ -344,7 +352,6 @@ public class TuioDemo : Form, TuioListener
         //        screen = 3;
         //}
 
-        checkLogin();
         //checkCollisonTrue();
         exitRun();
 
@@ -368,7 +375,7 @@ public class TuioDemo : Form, TuioListener
                 studentRegister();
                 break;
             case 6:
-                chooseDevice(g);
+               // chooseDevice(g);
                 break;
         }
 
@@ -482,7 +489,7 @@ public class TuioDemo : Form, TuioListener
         float rowHeight = 30;
         float rowWidth = 500;
 
-        foreach (var student in students)
+        foreach (var student in users)
         {
             g.FillRectangle(Brushes.White, new Rectangle((int)startX, (int)startY, (int)rowWidth, (int)rowHeight));
             g.DrawRectangle(Pens.Black, new Rectangle((int)startX, (int)startY, (int)rowWidth, (int)rowHeight));
@@ -512,7 +519,7 @@ public class TuioDemo : Form, TuioListener
 
     private void addScore()
     {
-        students[currentStudent].Tscore += 5;
+        users[currentStudent].Tscore += 5;
     }
     private void drawScore(Graphics g)
     {
@@ -524,12 +531,12 @@ public class TuioDemo : Form, TuioListener
         {
             g.DrawEllipse(Pens.Gray, scoreIndicatorX, scoreIndicatorY, scoreIndicatorSize, scoreIndicatorSize);
 
-            float sweepAngle = (students[currentStudent].Tscore / 10) * 360;
+            float sweepAngle = (users[currentStudent].Tscore / 10) * 360;
             g.DrawArc(scorePen, scoreIndicatorX, scoreIndicatorY, scoreIndicatorSize, scoreIndicatorSize, -90, sweepAngle);
         }
 
         var scoreFont = new Font("Arial", 14, FontStyle.Bold);
-        string scoreText = $"{students[currentStudent].Tscore}%";
+        string scoreText = $"{users[currentStudent].Tscore}%";
         var scoreTextSize = g.MeasureString(scoreText, scoreFont);
         float scoreTextX = scoreIndicatorX + (scoreIndicatorSize - scoreTextSize.Width) / 2;
         float scoreTextY = scoreIndicatorY + (scoreIndicatorSize - scoreTextSize.Height) / 2;
@@ -546,31 +553,42 @@ public class TuioDemo : Form, TuioListener
 
     private void LoadQuestions()
     {
-        // Example questions
-        easyQuestions.Add(new Question("What is 2+2?", new List<string> { "4", "5", "6", "7" }, "4", "easy"));
-        easyQuestions.Add(new Question("What color is the sky?", new List<string> { "Red", "Blue", "Green", "Yellow" }, "Blue", "easy"));
-        easyQuestions.Add(new Question("Which is the largest animal?", new List<string> { "Elephant", "Whale", "Shark", "Lion" }, "Whale", "easy"));
-        easyQuestions.Add(new Question("What is the capital of France?", new List<string> { "Berlin", "Madrid", "Paris", "Rome" }, "Paris", "easy"));
-        easyQuestions.Add(new Question("What is 3+5?", new List<string> { "8", "7", "9", "6" }, "8", "easy"));
 
-        mediumQuestions.Add(new Question("What is the square root of 16?", new List<string> { "2", "4", "6", "8" }, "4", "medium"));
-        mediumQuestions.Add(new Question("Who discovered gravity?", new List<string> { "Einstein", "Newton", "Galileo", "Tesla" }, "Newton", "medium"));
-        mediumQuestions.Add(new Question("What is the chemical symbol for water?", new List<string> { "H2O", "CO2", "O2", "N2" }, "H2O", "medium"));
-        mediumQuestions.Add(new Question("What is the largest planet in our solar system?", new List<string> { "Earth", "Mars", "Jupiter", "Saturn" }, "Jupiter", "medium"));
-        mediumQuestions.Add(new Question("Which element has the atomic number 1?", new List<string> { "Hydrogen", "Oxygen", "Carbon", "Helium" }, "Hydrogen", "medium"));
+    string jsonPath = "bin/Debug/questions.json"; // Path to your JSON file
+    if (File.Exists(jsonPath))
+    {
+        string jsonData = File.ReadAllText(jsonPath);
+        List<Question> allQuestions = JsonSerializer.Deserialize<List<Question>>(jsonData);
 
-        hardQuestions.Add(new Question("What is the derivative of x^2?", new List<string> { "2x", "x", "x^2", "1" }, "2x", "hard"));
-        hardQuestions.Add(new Question("What is the capital of Mongolia?", new List<string> { "Ulaanbaatar", "Astana", "Tashkent", "Bishkek" }, "Ulaanbaatar", "hard"));
-        hardQuestions.Add(new Question("Who wrote 'War and Peace'?", new List<string> { "Tolstoy", "Dostoevsky", "Pushkin", "Turgenev" }, "Tolstoy", "hard"));
-        hardQuestions.Add(new Question("What is the square root of 256?", new List<string> { "16", "14", "12", "10" }, "16", "hard"));
-        hardQuestions.Add(new Question("What is the longest river in the world?", new List<string> { "Amazon", "Nile", "Yangtze", "Mississippi" }, "Nile", "hard"));
+        // Separate questions by difficulty
+        foreach (var question in allQuestions)
+        {
+            switch (question.Difficulty.ToLower())
+            {
+                case "easy":
+                    easyQuestions.Add(question);
+                    break;
+                case "medium":
+                    mediumQuestions.Add(question);
+                    break;
+                case "hard":
+                    hardQuestions.Add(question);
+                    break;
+            }
+        }
     }
+    else
+    {
+        throw new FileNotFoundException("Questions file not found!");
+    }
+}
     private void changeQuestionBackground(PaintEventArgs pevent,
         Graphics g,
         SolidBrush c1Brush,
         SolidBrush c2Brush,
         SolidBrush c3Brush,
-        SolidBrush c4Brush)
+        SolidBrush c4Brush,
+        string[] imagePaths)
     {
         
         Brush[] quadrantBrushes = { c1Brush, c2Brush, c3Brush, c4Brush };
@@ -604,7 +622,7 @@ public class TuioDemo : Form, TuioListener
         int boxY = (height - questionBoxHeight) / 2;
 
 
-        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == students[currentStudent].Marker);
+        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == users[currentStudent].Marker);
 
         if (marker1 != null)
         {
@@ -670,10 +688,9 @@ public class TuioDemo : Form, TuioListener
         drawScore(g);
     }
 
-
     private void checkNavigation()
     {
-        var marker2 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == students[currentStudent].Marker);
+        var marker2 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == users[currentStudent].Marker);
         var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4);
         double distanceThreshold = 0.25;
 
@@ -701,9 +718,9 @@ public class TuioDemo : Form, TuioListener
             }
         }
     }
-    private void checkLogin()
+    private void checkLogin(int userId)
     {
-        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1); // Student Login
+          /* var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1); // Student Login
         if (marker1 != null)
         {
             for (int i = 0; i < students.Count; i++)
@@ -714,7 +731,9 @@ public class TuioDemo : Form, TuioListener
                     screen = 3;
                 }
             }
+
         }
+          */
     }
     private void studentRegister()
     {
@@ -722,21 +741,21 @@ public class TuioDemo : Form, TuioListener
         if (marker != null && marker.SymbolID != 4 && marker.SymbolID != 8 && marker.SymbolID != 10)
         {
             bool flag = false;
-            // check if any students has the current register marker
-            for (int i = 0; i < students.Count; i++)
+            // check if any users has the current register marker
+            for (int i = 0; i < users.Count; i++)
             {
-                if (students[i].Marker == marker.SymbolID)
+                if (users[i].Marker == marker.SymbolID)
                 {
-                    students[i].Attended = true;
+                    users[i].Attended = true;
                     currentStudent = i;
                     screen = 3;
                     flag = true;
                 }
             }
             if (flag) return;
-            Student temp = new Student(students.Count + 1, "Student" + (students.Count + 1), "", marker.SymbolID) { Attended = true };
-            students.Add(temp);
-            currentStudent = students.Count - 1;
+            User temp = new User(users.Count + 1, "Student" + (users.Count + 1), "", marker.SymbolID, true) { Attended = true };
+            users.Add(temp);
+            currentStudent = users.Count - 1;
             screen = 6;
 
         }
@@ -783,9 +802,9 @@ public class TuioDemo : Form, TuioListener
         var marker = objectList.Values.FirstOrDefault();
         if (marker != null)
         {
-            for (int i = 0; i < students.Count; i++)
+            for (int i = 0; i < users.Count; i++)
             {
-                if (students[i].Marker == marker.SymbolID)
+                if (users[i].Marker == marker.SymbolID)
                 {
                     handleTuioRotation(marker, i);
                 }
@@ -797,6 +816,12 @@ public class TuioDemo : Form, TuioListener
     {
         if (marker != null)
         {
+            // Ensure there are devices in the list
+            if (bluetoothDevices.Count == 0)
+            {
+                Console.WriteLine("No Bluetooth devices available.");
+                return; // Exit the function if no devices are present
+            }
 
             double anglePerDevice = 360.0 / bluetoothDevices.Count;
             double angle = marker.Angle * (180 / Math.PI);
@@ -811,7 +836,7 @@ public class TuioDemo : Form, TuioListener
                 double distance = Math.Sqrt(Math.Pow(marker.X - marker4.X, 2) + Math.Pow(marker.Y - marker4.Y, 2));
                 if (distance < 0.35)
                 {
-                    students[index].Bluetooth = bluetoothDevices[selectedDeviceIndex];
+                    users[index].Bluetooth = bluetoothDevices[selectedDeviceIndex];
                     currentStudent = index;
                     screen = 1;
                     hasNavigated = true;
@@ -819,11 +844,12 @@ public class TuioDemo : Form, TuioListener
             }
         }
     }
+
     private void checkCollisonTrue()
     {
         double distanceThreshold = 0.25;
 
-        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == students[currentStudent].Marker);
+        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == users[currentStudent].Marker);
         var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4); // Answer selection TUIO
 
         if (marker4 != null && marker1 != null)
@@ -1001,7 +1027,12 @@ public class TuioDemo : Form, TuioListener
                 //Debug.WriteLine(message);
 
                 // Determine message type by prefix and process accordingly
-                if (message.StartsWith("Q:"))
+                if (message.StartsWith("ID:"))
+                {
+                    int id = int.Parse(message.Substring(3));
+                    //checkLogin(id);
+                }
+                else if (message.StartsWith("Q:"))
                 {
                     string question = message.Substring(2);
                     if (!questions.Contains(question))
