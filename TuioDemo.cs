@@ -35,7 +35,7 @@ using System.Drawing.Drawing2D;
 using System.IO;
 using System.Timers;
 
-public class Student
+public class User
 {
     public int StudentId { get; set; }
     public string Name { get; set; }
@@ -48,8 +48,10 @@ public class Student
 
     public int Marker { get; set; }
 
+    public bool isStudent { get; set; }
+
     // Constructor
-    public Student(int studentId, string name, string bluetooth, int marker)
+    public User(int studentId, string name, string bluetooth, int marker, bool isStudent)
     {
         StudentId = studentId;
         Name = name;
@@ -57,6 +59,7 @@ public class Student
         Tscore = 0;
         Bluetooth = bluetooth;
         Marker = marker;
+        isStudent = isStudent;
     }
 }
 
@@ -120,11 +123,11 @@ public class TuioDemo : Form, TuioListener
     private static List<string> imagePaths = new List<string>();
     private static List<string> answers = new List<string>();
     private static List<string> bluetoothDevices = new List<string>();
-    private List<Student> students = new List<Student>
+    private List<User> users = new List<User>
     {
-    new Student(1, "Kamal Mohamed", "CC:F9:F0:CD:B9:DC",0) { Attended = false, Tscore = 0 },
-    new Student(2, "Jane Smith", "", 0) { Attended = true, Tscore = 5 },
-    new Student(3, "Alex Brown", "", 0) { Attended = false, Tscore = 0 }
+    new User(1, "Kamal Mohamed", "CC:F9:F0:CD:B9:DC",0, false) { Attended = false, Tscore = 0 },
+    new User(2, "Jane Smith", "", 0, true) { Attended = true, Tscore = 5 },
+    new User(3, "Alex Brown", "", 0, true) { Attended = false, Tscore = 0 }
     };
 
     Font font = new Font("Arial", 10.0f);
@@ -344,7 +347,6 @@ public class TuioDemo : Form, TuioListener
         //        screen = 3;
         //}
 
-        checkLogin();
         //checkCollisonTrue();
         exitRun();
 
@@ -482,7 +484,7 @@ public class TuioDemo : Form, TuioListener
         float rowHeight = 30;
         float rowWidth = 500;
 
-        foreach (var student in students)
+        foreach (var student in users)
         {
             g.FillRectangle(Brushes.White, new Rectangle((int)startX, (int)startY, (int)rowWidth, (int)rowHeight));
             g.DrawRectangle(Pens.Black, new Rectangle((int)startX, (int)startY, (int)rowWidth, (int)rowHeight));
@@ -512,7 +514,7 @@ public class TuioDemo : Form, TuioListener
 
     private void addScore()
     {
-        students[currentStudent].Tscore += 5;
+        users[currentStudent].Tscore += 5;
     }
     private void drawScore(Graphics g)
     {
@@ -524,12 +526,12 @@ public class TuioDemo : Form, TuioListener
         {
             g.DrawEllipse(Pens.Gray, scoreIndicatorX, scoreIndicatorY, scoreIndicatorSize, scoreIndicatorSize);
 
-            float sweepAngle = (students[currentStudent].Tscore / 10) * 360;
+            float sweepAngle = (users[currentStudent].Tscore / 10) * 360;
             g.DrawArc(scorePen, scoreIndicatorX, scoreIndicatorY, scoreIndicatorSize, scoreIndicatorSize, -90, sweepAngle);
         }
 
         var scoreFont = new Font("Arial", 14, FontStyle.Bold);
-        string scoreText = $"{students[currentStudent].Tscore}%";
+        string scoreText = $"{users[currentStudent].Tscore}%";
         var scoreTextSize = g.MeasureString(scoreText, scoreFont);
         float scoreTextX = scoreIndicatorX + (scoreIndicatorSize - scoreTextSize.Width) / 2;
         float scoreTextY = scoreIndicatorY + (scoreIndicatorSize - scoreTextSize.Height) / 2;
@@ -604,7 +606,7 @@ public class TuioDemo : Form, TuioListener
         int boxY = (height - questionBoxHeight) / 2;
 
 
-        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == students[currentStudent].Marker);
+        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == users[currentStudent].Marker);
 
         if (marker1 != null)
         {
@@ -673,7 +675,7 @@ public class TuioDemo : Form, TuioListener
 
     private void checkNavigation()
     {
-        var marker2 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == students[currentStudent].Marker);
+        var marker2 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == users[currentStudent].Marker);
         var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4);
         double distanceThreshold = 0.25;
 
@@ -701,9 +703,9 @@ public class TuioDemo : Form, TuioListener
             }
         }
     }
-    private void checkLogin()
+    private void checkLogin(int userId)
     {
-        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1); // Student Login
+          /* var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1); // Student Login
         if (marker1 != null)
         {
             for (int i = 0; i < students.Count; i++)
@@ -714,7 +716,9 @@ public class TuioDemo : Form, TuioListener
                     screen = 3;
                 }
             }
+
         }
+          */
     }
     private void studentRegister()
     {
@@ -722,21 +726,21 @@ public class TuioDemo : Form, TuioListener
         if (marker != null && marker.SymbolID != 4 && marker.SymbolID != 8 && marker.SymbolID != 10)
         {
             bool flag = false;
-            // check if any students has the current register marker
-            for (int i = 0; i < students.Count; i++)
+            // check if any users has the current register marker
+            for (int i = 0; i < users.Count; i++)
             {
-                if (students[i].Marker == marker.SymbolID)
+                if (users[i].Marker == marker.SymbolID)
                 {
-                    students[i].Attended = true;
+                    users[i].Attended = true;
                     currentStudent = i;
                     screen = 3;
                     flag = true;
                 }
             }
             if (flag) return;
-            Student temp = new Student(students.Count + 1, "Student" + (students.Count + 1), "", marker.SymbolID) { Attended = true };
-            students.Add(temp);
-            currentStudent = students.Count - 1;
+            User temp = new User(users.Count + 1, "Student" + (users.Count + 1), "", marker.SymbolID, true) { Attended = true };
+            users.Add(temp);
+            currentStudent = users.Count - 1;
             screen = 6;
 
         }
@@ -783,9 +787,9 @@ public class TuioDemo : Form, TuioListener
         var marker = objectList.Values.FirstOrDefault();
         if (marker != null)
         {
-            for (int i = 0; i < students.Count; i++)
+            for (int i = 0; i < users.Count; i++)
             {
-                if (students[i].Marker == marker.SymbolID)
+                if (users[i].Marker == marker.SymbolID)
                 {
                     handleTuioRotation(marker, i);
                 }
@@ -811,7 +815,7 @@ public class TuioDemo : Form, TuioListener
                 double distance = Math.Sqrt(Math.Pow(marker.X - marker4.X, 2) + Math.Pow(marker.Y - marker4.Y, 2));
                 if (distance < 0.35)
                 {
-                    students[index].Bluetooth = bluetoothDevices[selectedDeviceIndex];
+                    users[index].Bluetooth = bluetoothDevices[selectedDeviceIndex];
                     currentStudent = index;
                     screen = 1;
                     hasNavigated = true;
@@ -823,7 +827,7 @@ public class TuioDemo : Form, TuioListener
     {
         double distanceThreshold = 0.25;
 
-        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == students[currentStudent].Marker);
+        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == users[currentStudent].Marker);
         var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4); // Answer selection TUIO
 
         if (marker4 != null && marker1 != null)
@@ -1001,7 +1005,12 @@ public class TuioDemo : Form, TuioListener
                 //Debug.WriteLine(message);
 
                 // Determine message type by prefix and process accordingly
-                if (message.StartsWith("Q:"))
+                if (message.StartsWith("ID:"))
+                {
+                    int id = int.Parse(message.Substring(3));
+                    checkLogin(id);
+                }
+                else if (message.StartsWith("Q:"))
                 {
                     string question = message.Substring(2);
                     if (!questions.Contains(question))
