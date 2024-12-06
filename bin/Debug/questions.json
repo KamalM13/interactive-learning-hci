@@ -2,105 +2,105 @@
     {
         "text": "What is the capital of Egypt?",
         "choices": ["Aswan", "Cairo", "Giza", "Behira"],
-        "imagePaths": ["bin/Debug/aswan.jpg", "bin/Debug/cairo.jpg", "bin/Debug/giza.jpg", "bin/Debug/behira.jpg"],
+        "imagePaths": ["aswan.jpg", "cairo.jpg", "giza.jpg", "behira.jpg"],
         "correctAnswer": "Cairo",
         "difficulty": "easy"
     },
     {
         "text": "What animal lays eggs?",
         "choices": ["Cow", "Chicken", "Fox", "Dog"],
-        "imagePaths": ["bin/Debug/cow.jpg", "bin/Debug/chicken.jpg", "bin/Debug/fox.jpg", "bin/Debug/dog.jpg"],
+        "imagePaths": ["cow.jpg", "chicken.jpg", "fox.jpg", "dog.jpg"],
         "correctAnswer": "Chicken",
         "difficulty": "easy"
     },
     {
         "text": "What is the largest ocean on Earth?",
         "choices": ["Atlantic", "Pacific", "Indian", "Arctic"],
-        "imagePaths": ["bin/Debug/atlantic.jpg", "bin/Debug/pacific.jpg", "bin/Debug/indian.jpg", "bin/Debug/arctic.jpg"],
+        "imagePaths": ["atlantic.jpg", "pacific.jpg", "indian.jpg", "arctic.jpg"],
         "correctAnswer": "Pacific",
         "difficulty": "easy"
     },
     {
         "text": "What is 2 + 2?",
         "choices": ["3", "4", "5", "6"],
-        "imagePaths": ["bin/Debug/three.jpg", "bin/Debug/four.jpg", "bin/Debug/five.jpg", "bin/Debug/six.jpg"],
+        "imagePaths": ["three.jpg", "four.jpg", "five.jpg", "six.jpg"],
         "correctAnswer": "4",
         "difficulty": "easy"
     },
     {
         "text": "Which color is the sky?",
         "choices": ["red", "blue", "Green", "Yellow"],
-        "imagePaths": ["bin/Debug/red.jpg", "bin/Debug/blue.jpg", "bin/Debug/green.jpg", "bin/Debug/yellow.jpg"],
+        "imagePaths": ["red.jpg", "blue.jpg", "green.jpg", "yellow.jpg"],
         "correctAnswer": "blue",
         "difficulty": "easy"
     },
     {
         "text": "Which animal can fly?",
         "choices": ["Cow", "Chicken", "Bird", "Bat"],
-        "imagePaths": ["bin/Debug/cow.jpg", "bin/Debug/chicken.jpg", "bin/Debug/bird.jpg", "bin/Debug/bat.jpg"],
+        "imagePaths": ["cow.jpg", "chicken.jpg", "bird.jpg", "bat.jpg"],
         "correctAnswer": "Bird",
         "difficulty": "medium"
     },
     {
         "text": "What do plants need to grow?",
         "choices": ["Milk", "Water", "Sunlight", "Soil"],
-        "imagePaths": ["bin/Debug/milk.jpg", "bin/Debug/water.jpg", "bin/Debug/sunlight.jpg", "bin/Debug/soil.jpg"],
+        "imagePaths": ["milk.jpg", "water.jpg", "sunlight.jpg", "soil.jpg"],
         "correctAnswer": "Sunlight",
         "difficulty": "medium"
     },
     {
         "text": "How many continents are there?",
         "choices": ["5", "6", "7", "8"],
-        "imagePaths": ["bin/Debug/five.jpg", "bin/Debug/six.jpg", "bin/Debug/seven.jpg", "bin/Debug/eight.jpg"],
+        "imagePaths": ["five.jpg", "six.jpg", "seven.jpg", "eight.jpg"],
         "correctAnswer": "7",
         "difficulty": "medium"
     },
     {
         "text": "What is the longest river in the world?",
         "choices": ["Nile River", "Amazon River", "Yangtze River", "Mississippi River"],
-        "imagePaths": ["bin/Debug/nile.jpg", "bin/Debug/amazon.jpg", "bin/Debug/yangtze.jpg", "bin/Debug/mississippi.jpg"],
+        "imagePaths": ["nile.jpg", "amazon.jpg", "yangtze.jpg", "mississippi.jpg"],
         "correctAnswer": "Nile River",
         "difficulty": "medium"
     },
     {
         "text": "What is the chemical symbol for water?",
         "choices": ["H2O", "CO2", "O2", "N2"],
-        "imagePaths": ["bin/Debug/h2o.jpg", "bin/Debug/co2.jpg", "bin/Debug/o2.jpg", "bin/Debug/n2.jpg"],
+        "imagePaths": ["h2o.jpg", "co2.jpg", "o2.jpg", "n2.jpg"],
         "correctAnswer": "H2O",
         "difficulty": "medium"
     },
     {
         "text": "What do bees make?",
         "choices": ["Honey", "Milk", "Bread", "Juice"],
-        "imagePaths": ["bin/Debug/honey.jpg", "bin/Debug/milk.jpg", "bin/Debug/bread.jpg", "bin/Debug/juice.jpg"],
+        "imagePaths": ["honey.jpg", "milk.jpg", "bread.jpg", "juice.jpg"],
         "correctAnswer": "Honey",
         "difficulty": "hard"
     },
     {
         "text": "What is the biggest mountain in the world?",
         "choices": ["Mount Everest", "K2", "Kangchenjunga", "Mount Kilimanjaro"],
-        "imagePaths": ["bin/Debug/mount_everest.jpg", "bin/Debug/k2.jpg", "bin/Debug/kangchenjunga.jpg", "bin/Debug/kilimanjaro.jpg"],
+        "imagePaths": ["mount_everest.jpg", "k2.jpg", "kangchenjunga.jpg", "kilimanjaro.jpg"],
         "correctAnswer": "Mount Everest",
         "difficulty": "hard"
     },
     {
         "text": "What is the powerhouse of the cell?",
         "choices": ["Nucleus", "Mitochondria", "Ribosome", "Golgi apparatus"],
-        "imagePaths": ["bin/Debug/nucleus.jpg", "bin/Debug/mitochondria.jpg", "bin/Debug/ribosome.jpg", "bin/Debug/golgi.jpg"],
+        "imagePaths": ["nucleus.jpg", "mitochondria.jpg", "ribosome.jpg", "golgi.jpg"],
         "correctAnswer": "Mitochondria",
         "difficulty": "hard"
     },
     {
         "text": "What is the largest continent by area?",
         "choices": ["Africa", "Asia", "North America", "Europe"],
-        "imagePaths": ["bin/Debug/africa.jpg", "bin/Debug/asia.jpg", "bin/Debug/north_america.jpg", "bin/Debug/europe.jpg"],
+        "imagePaths": ["africa.jpg", "asia.jpg", "north_america.jpg", "europe.jpg"],
         "correctAnswer": "Asia",
         "difficulty": "hard"
     },
     {
         "text": "What is the atomic number of Carbon?",
         "choices": ["6", "8", "12", "14"],
-        "imagePaths": ["bin/Debug/six.jpg", "bin/Debug/eight.jpg", "bin/Debug/twelve.jpg", "bin/Debug/fourteen.jpg"],
+        "imagePaths": ["six.jpg", "eight.jpg", "twelve.jpg", "fourteen.jpg"],
         "correctAnswer": "6",
         "difficulty": "hard"
     }

@@ -402,25 +402,7 @@ public class TuioDemo : Form, TuioListener
             }
         }
 
-        // Load and draw the character image at the top, scaled based on window size
-        //try
-        //{
-        //    using (Image characterImage = Image.FromFile("ID.png"))
-        //    {
-        //        float imageWidth = width / 6;
-        //        float imageHeight = characterImage.Height * (imageWidth / characterImage.Width);
-        //        float imageX = (width - imageWidth) / 2;
-        //        float imageY = height / 4 - imageHeight;
 
-        //        g.DrawImage(characterImage, new RectangleF(imageX, imageY, imageWidth, imageHeight));
-        //    }
-        //}
-        //catch (FileNotFoundException)
-        //{
-        //     //Display a red "Image not found!" message on the screen for debugging
-        //    g.DrawString("Image not found!", new Font("Arial", 12), Brushes.Red, 10, 10);
-        //}
-        // Set dynamic font size for welcome text based on window height
         float fontSize = Math.Max(18, height / 20);
         Font font = new Font("Comic Sans MS", fontSize, FontStyle.Bold);
         Brush textBrush = new SolidBrush(Color.Yellow);
@@ -456,6 +438,11 @@ public class TuioDemo : Form, TuioListener
     private void drawWelcomeScreen(Graphics g, PaintEventArgs pevent)
     {
         drawWelcomeBackground(g, pevent, "Student register with TUIO");
+    }
+
+    private void drawLearningScreen(Graphics g, PaintEventArgs pevent)
+    {
+
     }
     private void drawScreenTwo(Graphics g)
     {
@@ -505,6 +492,183 @@ public class TuioDemo : Form, TuioListener
         checkCollisonTrue();
     }
 
+    private string currentMenu = "Main"; // Tracks the current menu
+    private string selectedCategory = ""; // Tracks the selected category
+    private string selectedSubmenu = "";
+    private Dictionary<string, List<string>> subMenus = new Dictionary<string, List<string>> 
+    {
+        { "Math", new List<string> { "Algebra", "Geometry", "Calculus" } },
+        { "Science", new List<string> { "Physics", "Chemistry", "Biology" } },
+        { "History", new List<string> { "Ancient", "Medieval", "Modern" } },
+        { "Art", new List<string> { "Painting", "Sculpture", "Music" } },
+        { "Psychology", new List<string> { "Behavioral", "Cognitive", "Developmental" } },
+        { "Computer Science", new List<string> { "Programming", "Data Structures", "AI" } }
+    };
+    private Dictionary<string, List<string>> learningTopics = new Dictionary<string, List<string>>
+    {
+        { "Biology", new List<string> { "Chicken", "Cow", "Eagle", "Shark" } },
+        { "Physics", new List<string> { "Newton's Laws", "Thermodynamics", "Quantum Mechanics" } },
+        { "Algebra", new List<string> { "Linear Equations", "Quadratic Functions", "Polynomials" } }
+    };
+
+    
+    private string selectedTopic = ""; // The specific learning topic
+    private string selectedDetail = ""; // Selected detail about the topic
+    private Dictionary<string, (string ImagePath, List<string> Details)> topicDetails = new Dictionary<string, (string, List<string>)>
+    {
+        { "Chicken", ("chicken.jpg", new List<string> { "Sound", "Origin", "Diet", "Lifespan" }) },
+        { "Elephant", ("elephant.jpg", new List<string> { "Habitat", "Weight", "Diet", "Lifespan" }) },
+        { "Penguin", ("penguin.jpg", new List<string> { "Habitat", "Swimming Speed", "Diet", "Lifespan" }) }
+    };
+
+    private bool canNavigate = true;
+    private DateTime lastNavigationTime;
+    private TimeSpan navigationCooldown = TimeSpan.FromSeconds(1);
+    private void DrawPieMenu(Graphics g, List<string> options, int x, int y, int radius, double angleThreshold = 0.25)
+    {
+        int numOptions = options.Count;
+        float anglePerOption = 360f / numOptions;
+        double distanceThreshold = radius * 0.6;
+        string selectedOptionText = "None";
+        var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4);
+        var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 0);
+
+        for (int i = 0; i < numOptions; i++)
+        {
+            float startAngle = i * anglePerOption;
+            float sweepAngle = anglePerOption;
+
+            Brush sliceBrush = Brushes.LightGray;
+            Pen outlinePen = Pens.Black;
+
+
+            if (marker1 != null)
+            {
+                float normalizedAngle = (float)((marker1.Angle * 180 / Math.PI) % 360);
+                if (normalizedAngle >= startAngle && normalizedAngle < startAngle + sweepAngle)
+                {
+                    sliceBrush = Brushes.LightBlue;
+                    selectedOptionText = options[i];
+                }
+            }
+
+            
+            g.FillPie(sliceBrush, x - radius, y - radius, radius * 2, radius * 2, startAngle, sweepAngle);
+            g.DrawPie(outlinePen, x - radius, y - radius, radius * 2, radius * 2, startAngle, sweepAngle);
+
+            
+            float textAngle = (startAngle + sweepAngle / 2) * (float)(Math.PI / 180);
+            float textX = x + (float)(radius * 0.75 * Math.Cos(textAngle));
+            float textY = y + (float)(radius * 0.75 * Math.Sin(textAngle));
+            StringFormat sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+            g.DrawString(options[i], new Font("Arial", 10), Brushes.Black, new PointF(textX, textY), sf);
+        }
+
+        if (marker1 != null && marker4 != null)
+        {
+            // Draw marker
+            float markerScreenX = x + (float)(radius * Math.Cos(marker1.Angle));
+            float markerScreenY = y + (float)(radius * Math.Sin(marker1.Angle));
+            g.FillEllipse(Brushes.Red, markerScreenX - 5, markerScreenY - 5, 10, 10);
+
+            double distance = Math.Sqrt(Math.Pow(marker1.X - marker4.X, 2) + Math.Pow(marker1.Y - marker4.Y, 2));
+            if (distance <= distanceThreshold)
+            {
+                g.DrawString($"Selected: {selectedOptionText}", new Font("Arial", 12), Brushes.Black, new PointF(x - 50, y + radius + 20));
+
+                // Cooldown logic for navigation
+                if (canNavigate)
+                {
+                    HandleNavigation(selectedOptionText);
+
+                    canNavigate = false;
+                    lastNavigationTime = DateTime.Now; 
+                }
+            }
+            else
+            {
+                g.DrawString($"No valid selection", new Font("Arial", 12), Brushes.Black, new PointF(x - 50, y + radius + 20));
+            }
+        }
+        // Reset cooldown if elapsed time exceeds the cooldown duration
+        if (!canNavigate && (DateTime.Now - lastNavigationTime) >= navigationCooldown)
+        {
+            canNavigate = true;
+        }
+    }
+
+
+    private void DrawLearningMenu(PaintEventArgs pevent)
+    {
+        Graphics g = pevent.Graphics;
+
+        List<string> options;
+        if (currentMenu == "Main")
+        {
+            options = new List<string> { "Math", "Science", "History", "Art", "Psychology", "Computer Science" };
+        }
+        else if (currentMenu == "Submenu" && subMenus.ContainsKey(selectedCategory))
+        {
+            options = subMenus[selectedCategory];
+        }
+        else if (currentMenu == "Learning" && learningTopics.ContainsKey(selectedSubmenu))
+        {
+            options = learningTopics[selectedSubmenu];
+        }
+        else if (currentMenu == "TopicDetails")
+        {
+            DrawTopicDetails(g);
+            return; // Exit early to avoid drawing other menus
+        }
+        else
+        {
+            options = new List<string>(); // Empty if no valid menu state
+        }
+
+        DrawPieMenu(g, options, 200, 200, 150);
+    }
+
+    private void DrawTopicDetails(Graphics g)
+    {
+        if (topicDetails.ContainsKey(selectedTopic))
+        {
+            var (imagePath, details) = topicDetails[selectedTopic];
+
+            // Draw the background image based on the selected topic
+            g.DrawImage(Image.FromFile(imagePath), 0, 0, 400, 400);
+
+            // Draw pie menu for topic details
+            DrawPieMenu(g, details, 200, 350, 100);
+        }
+
+        // Display the selected detail
+        if (!string.IsNullOrEmpty(selectedDetail))
+        {
+            g.DrawString($"Detail: {selectedDetail}", new Font("Arial", 12), Brushes.Black, new PointF(50, 420));
+        }
+    }
+    private void HandleNavigation(string selectedOptionText)
+    {
+        if (currentMenu == "Learning" && selectedOptionText == "Chicken")
+        {
+            selectedTopic = selectedOptionText;
+            currentMenu = "TopicDetails"; // Transition to topic details
+        }
+        else if (currentMenu == "TopicDetails" && topicDetails.ContainsKey(selectedTopic) && topicDetails[selectedTopic].Details.Contains(selectedOptionText))
+        {
+            selectedDetail = selectedOptionText; // Update the detail being displayed
+        }
+        else if (currentMenu == "Main" && subMenus.ContainsKey(selectedOptionText))
+        {
+            selectedCategory = selectedOptionText;
+            currentMenu = "Submenu";
+        }
+        else if (currentMenu == "Submenu" && learningTopics.ContainsKey(selectedOptionText))
+        {
+            selectedSubmenu = selectedOptionText;
+            currentMenu = "Learning";
+        }
+    }
 
     private void drawScreenFour(PaintEventArgs pevent,
     Graphics g,
@@ -513,7 +677,7 @@ public class TuioDemo : Form, TuioListener
     SolidBrush brush3,
     SolidBrush brush4)
     {
-
+        DrawLearningMenu(pevent);
     }
 
     private void addScore()
@@ -567,7 +731,7 @@ public class TuioDemo : Form, TuioListener
 
                 var options = new JsonSerializerOptions
                 {
-                    PropertyNameCaseInsensitive = true 
+                    PropertyNameCaseInsensitive = true
                 };
                 List<Question> allQuestions = JsonSerializer.Deserialize<List<Question>>(jsonData, options);
 
@@ -757,7 +921,7 @@ public class TuioDemo : Form, TuioListener
         var user = users.FirstOrDefault(u => u.StudentId == userId);
         if (user != null)
         {
-            screen = 1;
+            screen = 4;
         }
 
     }
