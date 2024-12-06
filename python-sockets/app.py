@@ -48,9 +48,10 @@ def send_data(connection, loggedInUserId, question, answers, image_paths , bluet
         send_message(connection, f"GESTURE:{gesture_data}")
     for correct_answer in correct_answers:
         send_message(connection, f"CORRECT_ANSWER:{correct_answer}")
-    
+
     print("All data sent.")
-    return flag 
+    return flag
+
 
 from queue import Empty
 
@@ -123,6 +124,7 @@ def start_client(queue):
                     "Honey", "Mount Everest", "Mitochondria", "Asia", "6"
                 ]
 
+                
                 # Updated image paths corresponding to the correct answers
                 image_paths_easy = [
                     "bin\\Debug\\cairo.jpg", "bin\\Debug\\chicken.jpg", "bin\\Debug\\Pacific_ocean.jpg", "bin\\Debug\\four.jpg", "bin\\Debug\\Blue.jpg"
