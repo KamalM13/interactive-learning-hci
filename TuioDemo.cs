@@ -1203,6 +1203,7 @@ public class TuioDemo : Form, TuioListener
             {
 
                 string message = await ReadMessageAsync(stream);
+                Debug.WriteLine(message);
                 if (message == null)
                 {
                     Console.WriteLine("Client disconnected.");
