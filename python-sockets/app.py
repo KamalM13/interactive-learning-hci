@@ -8,12 +8,15 @@ import subprocess
 import os
 from ultralytics import YOLO
 from deepface import DeepFace
+import mediapipe as mp
 from collections import Counter
+from collections import deque
 import face_recognition
 import cv2
 from queue import Empty, Queue
 import Face_Recognition
 import Emotion_Recognition
+from live_ges import Recognizer, Point, next, previous
 
 class SharedCamera:
     def __init__(self, camera_index=0):
@@ -246,6 +249,70 @@ class EmotionDetectionHandler:
             y_offset += bar_height + spacing
 
 
+class GestureDetectionHandler:
+    def __init__(self, shared_camera, recognizer):
+        self.shared_camera = shared_camera
+        self.recognizer = recognizer
+        self.all_points = deque() 
+        self.frame_count = 0
+        self.mp_pose = mp.solutions.pose
+        self.mp_drawing = mp.solutions.drawing_utils
+        self.pose = self.mp_pose.Pose()
+        self.gestures = None
+
+    def start(self):
+        threading.Thread(target=self.run).start()
+
+    def run(self):
+        print("Starting gesture detection...")
+        while True:
+            frame = self.shared_camera.get_frame()
+            if frame is None:
+                continue
+
+            self.frame_count += 1
+            try:
+                # Convert the frame to RGB format
+                rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+                # Process the frame with MediaPipe Pose
+                results = self.pose.process(rgb_frame)
+
+                if results.pose_landmarks:
+                    # Extract wrist coordinates
+                    image_height, image_width, _ = frame.shape
+                    right_wrist = results.pose_landmarks.landmark[self.mp_pose.PoseLandmark.RIGHT_WRIST]
+                    left_wrist = results.pose_landmarks.landmark[self.mp_pose.PoseLandmark.LEFT_WRIST]
+
+                    self.all_points.append(Point(
+                        int(right_wrist.x * image_width),
+                        int(right_wrist.y * image_height),
+                        1
+                    ))
+
+                    self.all_points.append(Point(
+                        int(left_wrist.x * image_width),
+                        int(left_wrist.y * image_height),
+                        1
+                    ))
+
+                    # Recognize gesture every 30 frames
+                    if self.frame_count % 15 == 0:
+                        self.frame_count = 0
+                        result = self.recognizer.recognize(self.all_points)
+                        gesture_name, score = result
+                        print(f"Detected gesture: {gesture_name}, Score: {score:.2f}")
+                        self.all_points.clear()
+
+                        if score > 0.3:
+                            self.gestures=gesture_name
+                            
+            except Exception as e:
+                print(f"Error in gesture detection: {e}")
+
+    def get_gestures(self):
+        return self.gestures
+
 
 # ReactiVisionHandler: Manages the reactiVision subprocess
 class ReactiVisionHandler:
@@ -341,11 +408,14 @@ class Application:
             executable_path="C:/Users/KamalM12/Vscode/Hci Project/reacTIVision-1.5.1-win64/reacTIVision.exe"
         )
         self.emotion_handler = EmotionDetectionHandler(self.shared_camera)
-        
+
         self.face_recognition = FaceRecognition(self.shared_camera)
         self.logged_in_user_id = None
         self.users = [(1, "../bin/Debug/person.jpg")]
         self.users_img_encodings = FaceRecognition.create_image_encodings(self.users)
+
+        recognizer = Recognizer([next, previous])  # Replace with your gesture logic
+        self.gesture_handler = GestureDetectionHandler(self.shared_camera, recognizer)
 
     def start(self):
         print("Starting application...")
@@ -363,6 +433,7 @@ class Application:
         BluetoothScanner(self.bluetooth_queue).start()
         self.yolo_handler.start()
         self.emotion_handler.start()
+        self.gesture_handler.start()
         threading.Thread(target=self.client_thread).start()
 
     def client_thread(self):
@@ -374,7 +445,7 @@ class Application:
                     while True:
                         bluetooth_devices = self.get_bluetooth_devices()
                         detection_results = self.get_detection_results()
-                        gesture_data = None
+                        gesture_data = self.gesture_handler.get_gestures()
                         emotion_data = self.emotion_handler.current_emotion
                         # Send data to client
                         self.comm_handler.send_data(

@@ -558,7 +558,6 @@ public class TuioDemo : Form, TuioListener
 
         if (marker1 != null && marker4 != null)
         {
-            // Draw marker
             float markerScreenX = x + (float)(radius * Math.Cos(marker1.Angle));
             float markerScreenY = y + (float)(radius * Math.Sin(marker1.Angle));
             g.FillEllipse(Brushes.Red, markerScreenX - 5, markerScreenY - 5, 10, 10);
@@ -1227,9 +1226,22 @@ public class TuioDemo : Form, TuioListener
                 }
                 else if (message.StartsWith("DE:"))
                 {
-                    string objectDetection = message.Substring(4);
+                    string objectDetection = message.Substring(3);
                     Debug.WriteLine("Object Detection: " + objectDetection);
                     currentObject= objectDetection;
+                }
+                else if(message.StartsWith("GEST:"))
+                {
+                    string gesture = message.Substring(5);
+                    if (screen == 1)
+                    {
+                        if (gesture == "next")
+                        {
+                            QuestionNumber += 1;
+                            if (QuestionNumber > easyQuestions.Count)
+                                QuestionNumber = 0;
+                        }
+                    }
                 }
                 if (gestureTimer != null)
                 {
