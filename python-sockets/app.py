@@ -33,7 +33,7 @@ def send_message(connection, message):
     connection.recv(1)  # Expect a single-byte acknowledgment
 
 
-def send_data(connection, loggedInUserId, question, answers, image_paths, bluetooth_devices=[], gesture_data=None, flag=False):
+def send_data(connection, loggedInUserId, question, answers, image_paths , bluetooth_devices=[], gesture_data=None, flag=False):
     send_message(connection, f"ID:{loggedInUserId}")
     for q in question:
         send_message(connection, f"Q:{q}")
@@ -68,7 +68,7 @@ def start_client(queue):
             try:
                 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 client_socket.connect(("localhost", 12345))
-                # Define the questions, answers, and image paths with different difficulty levels
+            
                 questions_easy = [
                     "What is the capital of Egypt?", 
                     "What animal lays eggs?", 
