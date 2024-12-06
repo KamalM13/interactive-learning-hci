@@ -49,7 +49,7 @@ public class User
 
     public int Marker { get; set; }
 
-    public bool isStudent { get; set; }
+    public bool IsStudent { get; set; }
 
     // Constructor
     public User(int studentId, string name, string bluetooth, int marker, bool isStudent)
@@ -60,7 +60,7 @@ public class User
         Tscore = 0;
         Bluetooth = bluetooth;
         Marker = marker;
-        isStudent = isStudent;
+       IsStudent = isStudent;
     }
 }
 
@@ -587,8 +587,7 @@ public enum Difficulty
         SolidBrush c1Brush,
         SolidBrush c2Brush,
         SolidBrush c3Brush,
-        SolidBrush c4Brush,
-        string[] imagePaths)
+        SolidBrush c4Brush)
     {
         
         Brush[] quadrantBrushes = { c1Brush, c2Brush, c3Brush, c4Brush };
