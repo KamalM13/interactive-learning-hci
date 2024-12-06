@@ -10,6 +10,7 @@ from ultralytics import YOLO
 import cv2
 from queue import Empty, Queue
 import Face_Recognition
+import Emotion_Recognition
 
 
 # BluetoothScanner: Handles Bluetooth scanning in a separate thread
@@ -168,6 +169,7 @@ class Application:
                     while True:
                         bluetooth_devices = self.get_bluetooth_devices()
                         detection_results = self.get_detection_results()
+                        user_emtion = self.get_user_emotions()
                         self.comm_handler.send_data(
                             client_socket,
                             self.logged_in_user_id,
@@ -190,6 +192,9 @@ class Application:
         while not self.yolo_handler.detection_queue.empty():
             results.append(self.yolo_handler.detection_queue.get())
         return results
+    
+    def get_user_emotions():
+        return Emotion_Recognition.emotionDetection()
 
 
 # Entry Point
