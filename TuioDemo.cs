@@ -132,16 +132,8 @@ public class TuioDemo : Form, TuioListener
     new User(3, "Alex Brown", "", 0, true) { Attended = false, Tscore = 0 }
     };
     private static int loggedInUser = 0;
+    private static string currentObject = "";
 
-    Font font = new Font("Arial", 10.0f);
-    SolidBrush fntBrush = new SolidBrush(Color.White);
-    SolidBrush bgrBrush = new SolidBrush(Color.Purple);
-    SolidBrush curBrush = new SolidBrush(Color.FromArgb(192, 0, 192));
-    SolidBrush objBrush = new SolidBrush(Color.FromArgb(64, 0, 0));
-    SolidBrush blbBrush = new SolidBrush(Color.FromArgb(64, 64, 64));
-    Pen curPen = new Pen(new SolidBrush(Color.Blue), 1);
-
-    public static object marker1 { get; private set; }
 
     public TuioDemo(int port)
     {
@@ -495,7 +487,7 @@ public class TuioDemo : Form, TuioListener
     private string currentMenu = "Main"; // Tracks the current menu
     private string selectedCategory = ""; // Tracks the selected category
     private string selectedSubmenu = "";
-    private Dictionary<string, List<string>> subMenus = new Dictionary<string, List<string>> 
+    private Dictionary<string, List<string>> subMenus = new Dictionary<string, List<string>>
     {
         { "Math", new List<string> { "Algebra", "Geometry", "Calculus" } },
         { "Science", new List<string> { "Physics", "Chemistry", "Biology" } },
@@ -511,7 +503,7 @@ public class TuioDemo : Form, TuioListener
         { "Algebra", new List<string> { "Linear Equations", "Quadratic Functions", "Polynomials" } }
     };
 
-    
+
     private string selectedTopic = ""; // The specific learning topic
     private string selectedDetail = ""; // Selected detail about the topic
     private Dictionary<string, (string ImagePath, List<string> Details)> topicDetails = new Dictionary<string, (string, List<string>)>
@@ -552,11 +544,11 @@ public class TuioDemo : Form, TuioListener
                 }
             }
 
-            
+
             g.FillPie(sliceBrush, x - radius, y - radius, radius * 2, radius * 2, startAngle, sweepAngle);
             g.DrawPie(outlinePen, x - radius, y - radius, radius * 2, radius * 2, startAngle, sweepAngle);
 
-            
+
             float textAngle = (startAngle + sweepAngle / 2) * (float)(Math.PI / 180);
             float textX = x + (float)(radius * 0.75 * Math.Cos(textAngle));
             float textY = y + (float)(radius * 0.75 * Math.Sin(textAngle));
@@ -582,7 +574,7 @@ public class TuioDemo : Form, TuioListener
                     HandleNavigation(selectedOptionText);
 
                     canNavigate = false;
-                    lastNavigationTime = DateTime.Now; 
+                    lastNavigationTime = DateTime.Now;
                 }
             }
             else
@@ -1216,9 +1208,7 @@ public class TuioDemo : Form, TuioListener
                     Console.WriteLine("Client disconnected.");
                     break;
                 }
-                //Debug.WriteLine(message);
 
-                // Determine message type by prefix and process accordingly
                 if (message.StartsWith("ID:"))
                 {
                     int id = int.Parse(message.Substring(3));
@@ -1233,6 +1223,12 @@ public class TuioDemo : Form, TuioListener
                         bluetoothDevices.Add(device);
                         //Debug.WriteLine("Bluetooth Device " + bluetoothDevices.Count + ": " + device);
                     }
+                }
+                else if (message.StartsWith("DE:"))
+                {
+                    string objectDetection = message.Substring(4);
+                    Debug.WriteLine("Object Detection: " + objectDetection);
+                    currentObject= objectDetection;
                 }
                 if (gestureTimer != null)
                 {
