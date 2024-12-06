@@ -60,7 +60,7 @@ public class User
         Tscore = 0;
         Bluetooth = bluetooth;
         Marker = marker;
-       IsStudent = isStudent;
+        IsStudent = isStudent;
     }
 }
 
@@ -101,7 +101,7 @@ public class TuioDemo : Form, TuioListener
     {
         public string Text { get; set; }
         public List<string> Choices { get; set; }
-        public List<string> ImagePaths { get; set; } // Updated
+        public List<string> ImagePaths { get; set; }
         public string CorrectAnswer { get; set; }
         public string Difficulty { get; set; }
 
@@ -109,14 +109,14 @@ public class TuioDemo : Form, TuioListener
         {
             Text = text;
             Choices = choices;
-            ImagePaths = imagePaths; // Updated
+            ImagePaths = imagePaths;
             CorrectAnswer = correctAnswer;
             Difficulty = difficulty;
         }
     }
 
 
-public enum Difficulty
+    public enum Difficulty
     {
         Easy,
         Medium,
@@ -124,9 +124,6 @@ public enum Difficulty
     }
     private Difficulty difficultyLevel;
     private Difficulty currentDifficulty = Difficulty.Easy; // Set default to Easy, or as needed
-    private static List<string> questions = new List<string>();
-    private static List<string> imagePaths = new List<string>();
-    private static List<string> answers = new List<string>();
     private static List<string> bluetoothDevices = new List<string>();
     private List<User> users = new List<User>
     {
@@ -134,6 +131,7 @@ public enum Difficulty
     new User(2, "Jane Smith", "", 0, true) { Attended = true, Tscore = 5 },
     new User(3, "Alex Brown", "", 0, true) { Attended = false, Tscore = 0 }
     };
+    private static int loggedInUser = 0;
 
     Font font = new Font("Arial", 10.0f);
     SolidBrush fntBrush = new SolidBrush(Color.White);
@@ -354,7 +352,6 @@ public enum Difficulty
 
         //checkCollisonTrue();
         exitRun();
-
         switch (screen)
         {
             case 1:
@@ -372,10 +369,12 @@ public enum Difficulty
                 break;
             case 5:
                 drawWelcomeScreen(g, pevent);
+                if (loggedInUser != 0)
+                    checkLogin(loggedInUser);
                 studentRegister();
                 break;
             case 6:
-               // chooseDevice(g);
+                // chooseDevice(g);
                 break;
         }
 
@@ -426,7 +425,7 @@ public enum Difficulty
         Font font = new Font("Comic Sans MS", fontSize, FontStyle.Bold);
         Brush textBrush = new SolidBrush(Color.Yellow);
 
-        
+
         SizeF textSize = g.MeasureString(welcomeText, font);
         float x = (width - textSize.Width) / 2;
         float y = height / 2;
@@ -524,7 +523,7 @@ public enum Difficulty
     private void drawScore(Graphics g)
     {
         int scoreIndicatorSize = 80;
-        int scoreIndicatorX = width - scoreIndicatorSize - 20;  
+        int scoreIndicatorX = width - scoreIndicatorSize - 20;
         int scoreIndicatorY = 20;
 
         using (Pen scorePen = new Pen(Color.FromArgb(100, 150, 255), 8))
@@ -550,38 +549,74 @@ public enum Difficulty
                                             difficultyLevel == Difficulty.Medium ? mediumQuestions : hardQuestions;
         return selectedQuestions[currentQuestionIndex];
     }
+    private List<Question> GetCurrentDifficulty()
+    {
+        List<Question> selectedQuestions = difficultyLevel == Difficulty.Easy ? easyQuestions :
+                                            difficultyLevel == Difficulty.Medium ? mediumQuestions : hardQuestions;
+        return selectedQuestions;
+    }
 
     private void LoadQuestions()
     {
-
-    string jsonPath = "bin/Debug/questions.json"; // Path to your JSON file
-    if (File.Exists(jsonPath))
-    {
-        string jsonData = File.ReadAllText(jsonPath);
-        List<Question> allQuestions = JsonSerializer.Deserialize<List<Question>>(jsonData);
-
-        // Separate questions by difficulty
-        foreach (var question in allQuestions)
+        string jsonPath = "questions.json";
+        if (File.Exists(jsonPath))
         {
-            switch (question.Difficulty.ToLower())
+            try
             {
-                case "easy":
-                    easyQuestions.Add(question);
-                    break;
-                case "medium":
-                    mediumQuestions.Add(question);
-                    break;
-                case "hard":
-                    hardQuestions.Add(question);
-                    break;
+                string jsonData = File.ReadAllText(jsonPath);
+
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true 
+                };
+                List<Question> allQuestions = JsonSerializer.Deserialize<List<Question>>(jsonData, options);
+
+                if (allQuestions != null)
+                {
+                    Debug.WriteLine($"Loaded {allQuestions.Count} questions.");
+
+                    // Separate questions by difficulty
+                    foreach (var question in allQuestions)
+                    {
+                        string difficulty = question.Difficulty?.ToLower() ?? "unknown";
+
+                        switch (difficulty)
+                        {
+                            case "easy":
+                                easyQuestions.Add(question);
+                                break;
+                            case "medium":
+                                mediumQuestions.Add(question);
+                                break;
+                            case "hard":
+                                hardQuestions.Add(question);
+                                break;
+                            default:
+                                Debug.WriteLine($"Unknown difficulty for question: {question.Text}");
+                                break;
+                        }
+                    }
+
+                    // Debug output for confirmation
+                    Debug.WriteLine($"Easy Questions: {easyQuestions.Count}");
+                    Debug.WriteLine($"Medium Questions: {mediumQuestions.Count}");
+                    Debug.WriteLine($"Hard Questions: {hardQuestions.Count}");
+                }
+                else
+                {
+                    Debug.WriteLine("No questions loaded. JSON data might be empty.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading questions: {ex.Message}");
             }
         }
+        else
+        {
+            throw new FileNotFoundException("Questions file not found!");
+        }
     }
-    else
-    {
-        throw new FileNotFoundException("Questions file not found!");
-    }
-}
     private void changeQuestionBackground(PaintEventArgs pevent,
         Graphics g,
         SolidBrush c1Brush,
@@ -589,31 +624,29 @@ public enum Difficulty
         SolidBrush c3Brush,
         SolidBrush c4Brush)
     {
-        
+
         Brush[] quadrantBrushes = { c1Brush, c2Brush, c3Brush, c4Brush };
 
         int midWidth = width / 2;
         int midHeight = height / 2;
 
-        if (answers.Count >= 4)
+        Question question1 = GetCurrentQuestion();
+        int ii = 0;
+        for (int i = QuestionNumber * 4; i < (QuestionNumber * 4) + 4; i++)
         {
-            int ii = 0;
-            for (int i = QuestionNumber * 4; i < (QuestionNumber * 4) + 4; i++)
-            {
-                Debug.WriteLine(i + answers[i]);
-                int x = (i % 2 == 0) ? 0 : midWidth;
-                int y = ((i % 4) < 2) ? 0 : midHeight;
+            int x = (i % 2 == 0) ? 0 : midWidth;
+            int y = ((i % 4) < 2) ? 0 : midHeight;
 
-                g.FillRectangle(quadrantBrushes[ii], x, y, midWidth, midHeight);
-                ii++;
+            g.FillRectangle(quadrantBrushes[ii], x, y, midWidth, midHeight);
+            ii++;
 
-                var cityFont = new Font("Arial", 24, FontStyle.Bold);
-                var textSize = g.MeasureString(answers[i], cityFont);
-                float textX = x + (midWidth - textSize.Width) / 2;
-                float textY = y + (midHeight - textSize.Height) / 2;
-                g.DrawString(answers[i], cityFont, Brushes.White, new PointF(textX, textY));
-            }
+            var cityFont = new Font("Arial", 24, FontStyle.Bold);
+            var textSize = g.MeasureString(question1.Choices[i], cityFont);
+            float textX = x + (midWidth - textSize.Width) / 2;
+            float textY = y + (midHeight - textSize.Height) / 2;
+            g.DrawString(question1.Choices[i], cityFont, Brushes.White, new PointF(textX, textY));
         }
+
 
         int questionBoxWidth = 400;
         int questionBoxHeight = 100;
@@ -633,7 +666,7 @@ public enum Difficulty
             {
                 x = (1 % 2 == 0) ? 0 : midWidth;
                 y = (1 < 2) ? 0 : midHeight;
-                g.DrawImage(Image.FromFile(imagePaths[i]), x, y, midWidth, midHeight);
+                g.DrawImage(Image.FromFile(question1.ImagePaths[i]), x, y, midWidth, midHeight);
             }
 
 
@@ -641,7 +674,7 @@ public enum Difficulty
             {
                 x = (0 % 2 == 0) ? 0 : midWidth;
                 y = (0 < 2) ? 0 : midHeight;
-                g.DrawImage(Image.FromFile(imagePaths[i + 1]), x, y, midWidth, midHeight);
+                g.DrawImage(Image.FromFile(question1.ImagePaths[i + 1]), x, y, midWidth, midHeight);
             }
 
 
@@ -649,7 +682,7 @@ public enum Difficulty
             {
                 x = (2 % 2 == 0) ? 0 : midWidth;
                 y = (2 < 2) ? 0 : midHeight;
-                g.DrawImage(Image.FromFile(imagePaths[i + 2]), x, y, midWidth, midHeight);
+                g.DrawImage(Image.FromFile(question1.ImagePaths[i + 2]), x, y, midWidth, midHeight);
             }
 
 
@@ -658,7 +691,7 @@ public enum Difficulty
                 x = (3 % 2 == 0) ? 0 : midWidth;
                 y = (3 < 2) ? 0 : midHeight;
 
-                g.DrawImage(Image.FromFile(imagePaths[i + 3]), x, y, midWidth, midHeight);
+                g.DrawImage(Image.FromFile(question1.ImagePaths[i + 3]), x, y, midWidth, midHeight);
             }
 
         }
@@ -676,14 +709,14 @@ public enum Difficulty
         g.DrawRectangle(Pens.Black, boxX, boxY, questionBoxWidth, questionBoxHeight);
 
 
-        if (questions.Count > 0)
-        {
-            var questionFont = new Font("Arial", 18, FontStyle.Bold);
-            var questionTextSize = g.MeasureString(questions[QuestionNumber], questionFont);
-            float questionTextX = boxX + (questionBoxWidth - questionTextSize.Width) / 2;
-            float questionTextY = boxY + (questionBoxHeight - questionTextSize.Height) / 2;
-            g.DrawString(questions[QuestionNumber], questionFont, Brushes.Black, new PointF(questionTextX, questionTextY));
-        }
+
+
+        var questionFont = new Font("Arial", 18, FontStyle.Bold);
+        var questionTextSize = g.MeasureString(question1.Text, questionFont);
+        float questionTextX = boxX + (questionBoxWidth - questionTextSize.Width) / 2;
+        float questionTextY = boxY + (questionBoxHeight - questionTextSize.Height) / 2;
+        g.DrawString(question1.Text, questionFont, Brushes.Black, new PointF(questionTextX, questionTextY));
+
         drawScore(g);
     }
 
@@ -692,6 +725,7 @@ public enum Difficulty
         var marker2 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == users[currentStudent].Marker);
         var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4);
         double distanceThreshold = 0.25;
+        List<Question> questions = GetCurrentDifficulty();
 
         if (marker2 != null && marker4 != null)
         {
@@ -719,20 +753,13 @@ public enum Difficulty
     }
     private void checkLogin(int userId)
     {
-          /* var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 1); // Student Login
-        if (marker1 != null)
+        //Find user id in users that matches the logged in user
+        var user = users.FirstOrDefault(u => u.StudentId == userId);
+        if (user != null)
         {
-            for (int i = 0; i < students.Count; i++)
-            {
-                if (students[i].Bluetooth == "CC:F9:F0:CD:B9:DC")
-                {
-                    students[i].Attended = true;
-                    screen = 3;
-                }
-            }
-
+            screen = 1;
         }
-          */
+
     }
     private void studentRegister()
     {
@@ -760,7 +787,7 @@ public enum Difficulty
         }
         else if (marker != null)
         {
-            if(marker.SymbolID == 10)
+            if (marker.SymbolID == 10)
             {
                 screen = 3;
             }
@@ -851,6 +878,8 @@ public enum Difficulty
         var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == users[currentStudent].Marker);
         var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4); // Answer selection TUIO
 
+        List<Question> questions = GetCurrentDifficulty();
+
         if (marker4 != null && marker1 != null)
         {
             double distance = Math.Sqrt(Math.Pow(marker1.X - marker4.X, 2) + Math.Pow(marker1.Y - marker4.Y, 2));
@@ -883,7 +912,7 @@ public enum Difficulty
             // Handle gesture for "ok"
             if (gesture[gesture.Count - 1] == "ok" && marker1.Angle >= 5.23599 && marker1.Angle <= 6.10865)
             {
-                responseMessage = "Ashter katkout"; 
+                responseMessage = "Ashter katkout";
                 screen = 2; // Move to the next screen
                 addScore(); // Increment the score
                             // Handle difficulty-specific actions
@@ -891,7 +920,7 @@ public enum Difficulty
             }
             else if (gesture[gesture.Count - 1] == "ok" && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865))
             {
-                responseMessage = "Try again"; 
+                responseMessage = "Try again";
                 screen = 2; // Stay on the same screen for retry
             }
 
@@ -931,7 +960,7 @@ public enum Difficulty
         }
         else if (currentDifficulty == Difficulty.Medium)
         {
-           
+
             score += 2; // Increase score for medium difficulty
             responseMessage = "Good job! You are doing well!";
         }
@@ -1029,34 +1058,8 @@ public enum Difficulty
                 if (message.StartsWith("ID:"))
                 {
                     int id = int.Parse(message.Substring(3));
-                    //checkLogin(id);
-                }
-                else if (message.StartsWith("Q:"))
-                {
-                    string question = message.Substring(2);
-                    if (!questions.Contains(question))
-                    {
-                        questions.Add(question);
-                        //Debug.WriteLine("Question: " + question);
-                    }
-                }
-                else if (message.StartsWith("A:"))
-                {
-                    string answer = message.Substring(2);
-                    if (!answers.Contains(answer))
-                    {
-                        answers.Add(answer);
-                        //Debug.WriteLine("Answer " + answers.Count % 4 + ": " + answer);
-                    }
-                }
-                else if (message.StartsWith("IMG:"))
-                {
-                    string imagePath = message.Substring(4);
-                    if (!imagePaths.Contains(imagePath))
-                    {
-                        imagePaths.Add(imagePath);
-                        //Debug.WriteLine("Image Path " + imagePaths.Count % 4+ ": " + imagePath);
-                    }
+                    // Debug.WriteLine("ID: " + id);
+                    loggedInUser = id;
                 }
                 else if (message.StartsWith("BT:"))
                 {

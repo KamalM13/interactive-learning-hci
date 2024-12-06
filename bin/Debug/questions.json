@@ -29,9 +29,9 @@
     },
     {
         "text": "Which color is the sky?",
-        "choices": ["Blue", "Red", "Green", "Yellow"],
-        "imagePaths": ["bin/Debug/blue.jpg", "bin/Debug/red.jpg", "bin/Debug/green.jpg", "bin/Debug/yellow.jpg"],
-        "correctAnswer": "Blue",
+        "choices": ["red", "blue", "Green", "Yellow"],
+        "imagePaths": ["bin/Debug/red.jpg", "bin/Debug/blue.jpg", "bin/Debug/green.jpg", "bin/Debug/yellow.jpg"],
+        "correctAnswer": "blue",
         "difficulty": "easy"
     },
     {
