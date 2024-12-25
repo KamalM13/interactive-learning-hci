@@ -82,6 +82,7 @@ class BluetoothScanner:
                 time.sleep(1)
 
 
+
 # CommunicationHandler: Handles socket communication and data sending
 class CommunicationHandler:
     def __init__(self, server_address=("localhost", 12345)):
@@ -111,13 +112,27 @@ class CommunicationHandler:
 
 # YOLOHandler: Manages YOLO object detection
 class YOLOHandler:
-    def __init__(self, shared_camera, detection_queue):
+    def __init__(self, shared_camera, detection_queue, comm_handler):
         self.shared_camera = shared_camera
         self.detection_queue = detection_queue
         self.model = YOLO("yolo11n.pt")  # Replace with the correct YOLO model file
+        self.previous_positions = {}  # Dictionary to store the previous position of detected objects
+        self.comm_handler = comm_handler  # Communication handler for sending data
+        self.server_address = ("localhost", 12345)  # Update with the actual address if needed
+        self.connection = None
 
     def start(self):
+        # Establish connection to the C# application
+        threading.Thread(target=self._connect_to_server).start()
+        # Start object detection
         threading.Thread(target=self.run).start()
+
+    def _connect_to_server(self):
+        try:
+            self.connection = socket.create_connection(self.server_address)
+            print(f"Connected to server at {self.server_address}")
+        except Exception as e:
+            print(f"Error connecting to server: {e}")
 
     def run(self):
         print("Starting YOLO object detection...")
@@ -126,7 +141,7 @@ class YOLOHandler:
             if frame is None:
                 continue
 
-            results = self.model.predict(frame,verbose=False)
+            results = self.model.predict(frame, verbose=False)
 
             for result in results:
                 if hasattr(result, "boxes"):
@@ -137,12 +152,42 @@ class YOLOHandler:
 
                         if self.model.names[class_id] == "person" or confidence < 0.65:
                             continue
-
                         detection_data = {
                             "class": self.model.names[class_id],
                             "confidence": confidence,
                         }
                         self.detection_queue.put(detection_data)
+
+                        # Object label and coordinates
+                        object_label = self.model.names[class_id]
+                        center_x = (x1 + x2) // 2
+                        center_y = (y1 + y2) // 2
+
+                        # Track and send coordinates
+                        coordinates = f"{object_label},{center_x},{center_y}"
+                        print(f"Sending coordinates to server: {coordinates}")
+                        self._send_coordinates_to_server(coordinates)
+
+                        # Draw the rectangle and coordinates on the frame
+                        label = f"{object_label}: {confidence:.2f}"
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                        cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                        cv2.putText(frame, f"({center_x}, {center_y})", (center_x + 10, center_y - 10),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+            # Display the frame with updated object positions
+            cv2.imshow("Object Detection with Movement", frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):  # Press 'q' to exit
+                break
+
+    def _send_coordinates_to_server(self, coordinates):
+        if self.connection:
+            try:
+                self.comm_handler.send_message(self.connection, f"COORDS:{coordinates}")
+            except Exception as e:
+                print(f"Error sending coordinates: {e}")
+        else:
+            print("No active connection to server.")
 
     def process_results(self, results, frame):
         for result in results:
@@ -161,6 +206,7 @@ class YOLOHandler:
                     label = f"{self.model.names[class_id]}: {confidence:.2f}"
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                     cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
 
 
 

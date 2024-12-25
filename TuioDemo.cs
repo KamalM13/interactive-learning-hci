@@ -1198,6 +1198,7 @@ public class TuioDemo : Form, TuioListener
     {
         using (NetworkStream stream = client.GetStream())
         {
+            List<Tuple<float, float>> objectMovementCoordinates = new List<Tuple<float, float>>();
             while (client.Connected)  // Continuous loop for real-time handling
             {
 
@@ -1229,6 +1230,26 @@ public class TuioDemo : Form, TuioListener
                     string objectDetection = message.Substring(3);
                     Debug.WriteLine("Object Detection: " + objectDetection);
                     currentObject= objectDetection;
+                    // Assume object detection message contains coordinates in the format "x,y"
+                    // e.g., "DE:30.5,50.2" for coordinates (30.5, 50.2)
+                    string[] coordinates = objectDetection.Split(',');
+
+                    if (coordinates.Length == 2)
+                    {
+                        try
+                        {
+                            float x = float.Parse(coordinates[0]);
+                            float y = float.Parse(coordinates[1]);
+
+                            // Store the coordinates of the detected object
+                            objectMovementCoordinates.Add(new Tuple<float, float>(x, y));
+                            Debug.WriteLine($"Stored object coordinates: ({x}, {y})");
+                        }
+                        catch (FormatException)
+                        {
+                            Debug.WriteLine("Invalid coordinate format received.");
+                        }
+                    }
                 }
                 else if(message.StartsWith("GEST:"))
                 {

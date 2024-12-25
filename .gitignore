@@ -176,3 +176,6 @@ $RECYCLE.BIN/
 .DS_Store
 
 _NCrunch*
+
+# Ignore Visual Studio folder
+.vs/
