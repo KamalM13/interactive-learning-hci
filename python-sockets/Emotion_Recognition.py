@@ -2,7 +2,7 @@ from deepface import DeepFace
 import cv2
 
 def emotionDetection():
-    video_capture = cv2.VideoCapture(0)
+    video_capture = cv2.VideoCapture(1)
 
     if not video_capture.isOpened():
         print("Error: Could not access the camera.")
@@ -102,3 +102,6 @@ def draw_emotion_details(frame, emotions, dominant_emotion):
         )
 
         y_offset += bar_height + spacing
+
+if __name__ == "__main__":
+    emotionDetection()

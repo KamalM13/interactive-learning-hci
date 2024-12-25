@@ -2,21 +2,21 @@
     {
         "text": "What is the capital of Egypt?",
         "choices": ["Aswan", "Cairo", "Giza", "Behira"],
-        "imagePaths": ["aswan.jpg", "cairo.jpg", "giza.jpg", "behira.jpg"],
+        "imagePaths": ["cairo.jpg", "aswan.jpg", "giza.jpg", "behira.jpg"],
         "correctAnswer": "Cairo",
         "difficulty": "easy"
     },
     {
         "text": "What animal lays eggs?",
         "choices": ["Cow", "Chicken", "Fox", "Dog"],
-        "imagePaths": ["cow.jpg", "chicken.jpg", "fox.jpg", "dog.jpg"],
+        "imagePaths": ["chicken.jpg", "cow.jpg", "fox.jpg", "dog.jpg"],
         "correctAnswer": "Chicken",
         "difficulty": "easy"
     },
     {
         "text": "What is the largest ocean on Earth?",
         "choices": ["Atlantic", "Pacific", "Indian", "Arctic"],
-        "imagePaths": ["atlantic.jpg", "pacific.jpg", "indian.jpg", "arctic.jpg"],
+        "imagePaths": ["pacific.jpg", "atlantic.jpg", "indian.jpg", "arctic.jpg"],
         "correctAnswer": "Pacific",
         "difficulty": "easy"
     },
