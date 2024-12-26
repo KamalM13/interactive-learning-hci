@@ -1,26 +1,18 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\My Stuff\\MSA\\year4\\semster 1\\HCI\\project\\interactive-learning-hci\\",
+  "WorkspaceRootPath": "C:\\Users\\KamalM12\\Vscode\\Hci Project\\interactive-learning-hci\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|c:\\my stuff\\msa\\year4\\semster 1\\hci\\project\\interactive-learning-hci\\tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|c:\\users\\kamalm12\\vscode\\hci project\\interactive-learning-hci\\tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|solutionrelative:tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-<<<<<<< HEAD
-=======
     },
     {
-<<<<<<< HEAD
       "AbsoluteMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|C:\\Users\\KamalM12\\Vscode\\Hci Project\\interactive-learning-hci\\TUIO\\TuioObject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|solutionrelative:TUIO\\TuioObject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-=======
-      "AbsoluteMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|C:\\Users\\KamalM12\\Vscode\\Hci Project\\interactive-learning-hci\\tuio\\tuioobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|solutionrelative:tuio\\tuioobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
->>>>>>> parent of 95de54b (added object tracking)
     },
     {
       "AbsoluteMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|C:\\Users\\KamalM12\\Vscode\\Hci Project\\interactive-learning-hci\\tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|solutionrelative:tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
->>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
     }
   ],
   "DocumentGroupContainers": [
@@ -30,7 +22,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -42,24 +34,39 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "TuioObject.cs",
+              "DocumentMoniker": "C:\\Users\\KamalM12\\Vscode\\Hci Project\\interactive-learning-hci\\TUIO\\TuioObject.cs",
+              "RelativeDocumentMoniker": "TUIO\\TuioObject.cs",
+              "ToolTip": "C:\\Users\\KamalM12\\Vscode\\Hci Project\\interactive-learning-hci\\TUIO\\TuioObject.cs",
+              "RelativeToolTip": "TUIO\\TuioObject.cs",
+              "ViewState": "AgIAADkBAAAAAAAAAAAQwEgBAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-11-05T16:38:04.61Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 0,
               "Title": "TuioDemo.cs",
-              "DocumentMoniker": "C:\\My Stuff\\MSA\\year4\\semster 1\\HCI\\project\\interactive-learning-hci\\TuioDemo.cs",
+              "DocumentMoniker": "C:\\Users\\KamalM12\\Vscode\\Hci Project\\interactive-learning-hci\\TuioDemo.cs",
               "RelativeDocumentMoniker": "TuioDemo.cs",
-              "ToolTip": "C:\\My Stuff\\MSA\\year4\\semster 1\\HCI\\project\\interactive-learning-hci\\TuioDemo.cs",
+              "ToolTip": "C:\\Users\\KamalM12\\Vscode\\Hci Project\\interactive-learning-hci\\TuioDemo.cs",
               "RelativeToolTip": "TuioDemo.cs",
-<<<<<<< HEAD
-              "ViewState": "AgIAAI4CAAAAAAAAAAAuwJwCAAAAAAAAAAAAAA==",
-=======
-<<<<<<< HEAD
-              "ViewState": "AgIAAAYCAAAAAAAAAAAgwAICAABHAAAAAAAAAA==",
-=======
-              "ViewState": "AgIAALkEAAAAAAAAAAAswNAEAAA0AAAAAAAAAA==",
->>>>>>> parent of 95de54b (added object tracking)
->>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
+              "ViewState": "AgIAAHYBAAAAAAAAAAAUwIgBAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-25T19:36:47.883Z",
+              "WhenOpened": "2024-11-02T18:43:46.256Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "TuioDemo.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\KamalM12\\Vscode\\Hci Project\\interactive-learning-hci\\TuioDemo.cs",
+              "RelativeDocumentMoniker": "TuioDemo.cs",
+              "ToolTip": "C:\\Users\\KamalM12\\Vscode\\Hci Project\\interactive-learning-hci\\TuioDemo.cs [Design]",
+              "RelativeToolTip": "TuioDemo.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-11-02T18:43:43.664Z"
             }
           ]
         }

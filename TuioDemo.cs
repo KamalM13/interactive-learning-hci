@@ -90,13 +90,8 @@ public class TuioDemo : Form, TuioListener
     private bool fullscreen;
     private bool verbose;
     private static List<string> gesture = new List<string>();
-<<<<<<< HEAD
     private static int screen = 6;
     private static int QuestionNumber = 0;
-=======
-    private static int screen = 5;
-
->>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
     private string responseMessage = "";
     private int score = 0;
     private Dictionary<string, int> studentScores = new Dictionary<string, int>();
@@ -395,7 +390,7 @@ public class TuioDemo : Form, TuioListener
         g.Clear(Color.LightCyan);
 
         // Load the images for the boxes and laser
-        Image boxImage1 = Image.FromFile("hom2.jpg");  // Replace with the path to your first box image
+        Image boxImage1 = Image.FromFile("home2.jpg");  // Replace with the path to your first box image
         Image boxImage2 = Image.FromFile("farm.jpg");  // Replace with the path to your second box image
         Image laserImage = Image.FromFile("chicken.png");  // Replace with the path to your laser image
 
@@ -1146,62 +1141,7 @@ public class TuioDemo : Form, TuioListener
         }
 
     }
-<<<<<<< HEAD
-    private void studentRegister()
-    {
-        var marker = objectList.Values.FirstOrDefault();
-        if (marker != null && marker.SymbolID != 4 && marker.SymbolID != 8 && marker.SymbolID != 10)
-        {
-            bool flag = false;
-            // check if any users has the current register marker
-            for (int i = 0; i < users.Count; i++)
-            {
-                if (users[i].Marker == marker.SymbolID)
-                {
-                    users[i].Attended = true;
-                    currentStudent = i;
-                    screen = 3;
-                    flag = true;
-                }
-            }
-            if (flag) return;
-            User temp = new User(users.Count + 1, "Student" + (users.Count + 1), "", marker.SymbolID, true) { Attended = true };
-            users.Add(temp);
-            currentStudent = users.Count - 1;
-=======
-    //private void studentRegister()
-    //{
-    //    var marker = objectList.Values.FirstOrDefault();
-    //    if (marker != null && marker.SymbolID != 4 && marker.SymbolID != 8 && marker.SymbolID != 10)
-    //    {
-    //        bool flag = false;
-    //        // check if any users has the current register marker
-    //        for (int i = 0; i < users.Count; i++)
-    //        {
-    //            if (users[i].Marker == marker.SymbolID)
-    //            {
-    //                users[i].Attended = true;
-    //                currentStudent = i;
-    //                screen = 3;
-    //                flag = true;
-    //            }
-    //        }
-    //        if (flag) return;
-    //        User temp = new User(users.Count + 1, "Student" + (users.Count + 1), "", marker.SymbolID, true) { Attended = true };
-    //        users.Add(temp);
-    //        currentStudent = users.Count - 1;
-    //        screen = 6;
->>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
-
-    //    }
-    //    else if (marker != null)
-    //    {
-    //        if (marker.SymbolID == 10)
-    //        {
-    //            screen = 3;
-    //        }
-    //    }
-    //}
+    
     private int selectedDeviceIndex = 0;
     private void chooseDevice(Graphics g)
     {
@@ -1458,125 +1398,84 @@ public class TuioDemo : Form, TuioListener
         }
     }
     private static async Task ProcessClientAsync(TcpClient client)
+{
+    using (NetworkStream stream = client.GetStream())
     {
-
-        using (NetworkStream stream = client.GetStream())
+        while (client.Connected) // Continuous loop for real-time handling
         {
-            while (client.Connected)  // Continuous loop for real-time handling
+            try
             {
-                try
+                string message = await ReadMessageAsync(stream);
+
+                if (message == null)
                 {
+                    Console.WriteLine("Client disconnected.");
+                    break;
+                }
 
-                    string message = await ReadMessageAsync(stream);
+                Debug.WriteLine("CONNECTED...");
+                Debug.WriteLine(message);
 
-                    if (message == null)
+                if (message.StartsWith("ID:"))
+                {
+                    int id = int.Parse(message.Substring(3));
+                    loggedInUser = id;
+                }
+                else if (message.StartsWith("BT:"))
+                {
+                    string device = message.Substring(21);
+                    if (!bluetoothDevices.Contains(device))
                     {
-                        Console.WriteLine("Client disconnected.");
-                        break;
+                        bluetoothDevices.Add(device);
+                        Debug.WriteLine("Bluetooth Device " + bluetoothDevices.Count + ": " + device);
                     }
-<<<<<<< HEAD
-
-                    Debug.WriteLine("CONNECTEDD.........");
-                    Debug.WriteLine(message);
-                    if (message.StartsWith("ID:"))
-=======
                 }
                 else if (message.StartsWith("DE:"))
                 {
                     string objectDetection = message.Substring(3);
                     Debug.WriteLine("Object Detection: " + objectDetection);
-<<<<<<< HEAD
-                    currentObject= objectDetection;
+                    currentObject = objectDetection;
                 }
                 else if (message.StartsWith("GEST:"))
                 {
                     string gesture = message.Substring(5);
-                    if (screen == 1)
->>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
+                    if (screen == 1 && gesture == "next")
                     {
-
-                        int id = int.Parse(message.Substring(3));
-                        // Debug.WriteLine("ID: " + id);
-                        loggedInUser = id;
-                    }
-                    else if (message.StartsWith("BT:"))
-                    {
-                        string device = message.Substring(21);
-                        if (!bluetoothDevices.Contains(device))
-                        {
-<<<<<<< HEAD
-                            bluetoothDevices.Add(device);
-                            //Debug.WriteLine("Bluetooth Device " + bluetoothDevices.Count + ": " + device);
-=======
-                            currentQuestionIndex += 1;
-                            if (currentQuestionIndex > easyQuestions.Count)
-                                currentQuestionIndex = 0;
->>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
-                        }
-                    }
-                    else if (message.StartsWith("DE:"))
-                    {
-                        string objectDetection = message.Substring(3);
-                        Debug.WriteLine("Object Detection: " + objectDetection);
-                        currentObject = objectDetection;
-                    }
-                    else if (message.StartsWith("GEST:"))
-                    {
-                        string gesture = message.Substring(5);
-                        if (screen == 1)
-                        {
-                            if (gesture == "next")
-                            {
-                                QuestionNumber += 1;
-                                if (QuestionNumber > easyQuestions.Count)
-                                    QuestionNumber = 0;
-                            }
-                        }
-                    }
-                    else if (message.StartsWith("LAS:"))
-                    {
-                        Debug.WriteLine("In LAS");
-                        string laser = message.Substring(4);
-                        if (screen == 6 && laser != "none")
-                        {
-                            laser = laser.Replace("'", "\"");
-
-                            // Find the start and end of the "x" and "y" values in the string
-                            int xStartIndex = laser.IndexOf("\"x\":") + 5;  // Find the index where x value starts
-                            int xEndIndex = laser.IndexOf(",", xStartIndex);  // Find the end of x value
-                            int yStartIndex = laser.IndexOf("\"y\":") + 5;  // Find the index where y value starts
-                            int yEndIndex = laser.IndexOf("}", yStartIndex);  // Find the end of y value
-
-                            // Extract the x and y values as strings
-                            string xValueString = laser.Substring(xStartIndex, xEndIndex - xStartIndex).Trim();
-                            string yValueString = laser.Substring(yStartIndex, yEndIndex - yStartIndex).Trim();
-
-                            // Convert the extracted string values to integers
-                            laser_X = int.Parse(xValueString);
-                            laser_Y = int.Parse(yValueString);
-
-                            Debug.WriteLine(laser);
-
-                            Debug.WriteLine("Laser Coordinates: " + laser);
-
-                        }
-
-                    }
-                    if (gestureTimer != null)
-                    {
-                        gestureTimer.Stop();
-                    }
-                    if (message.StartsWith("URE:"))
-                    {
-                        string device = message.Substring(4);
-                        gesture.Add(device);
-                        StartGestureListener();
-                        Debug.WriteLine("gesture is " + gesture.Count + ": " + device);
+                        currentQuestionIndex++;
+                        if (currentQuestionIndex >= easyQuestions.Count)
+                            currentQuestionIndex = 0;
                     }
                 }
-<<<<<<< HEAD
-                catch (Exception ex)
-=======
+                else if (message.StartsWith("LAS:"))
+                {
+                    Debug.WriteLine("In LAS");
+                    string laser = message.Substring(4);
+                    if (screen == 6 && laser != "none")
+                    {
+                        laser = laser.Replace("'", "\"");
+
+                        // Extract x and y coordinates
+                        int xStartIndex = laser.IndexOf("\"x\":") + 5;
+                        int xEndIndex = laser.IndexOf(",", xStartIndex);
+                        int yStartIndex = laser.IndexOf("\"y\":") + 5;
+                        int yEndIndex = laser.IndexOf("}", yStartIndex);
+
+                        string xValueString = laser.Substring(xStartIndex, xEndIndex - xStartIndex).Trim();
+                        string yValueString = laser.Substring(yStartIndex, yEndIndex - yStartIndex).Trim();
+
+                        laser_X = int.Parse(xValueString);
+                        laser_Y = int.Parse(yValueString);
+
+                        Debug.WriteLine("Laser Coordinates: " + laser);
+                    }
+                }
+                else if (message.StartsWith("URE:"))
+                {
+                    string device = message.Substring(4);
+                    gesture.Add(device);
+                    StartGestureListener();
+                    Debug.WriteLine("Gesture is " + gesture.Count + ": " + device);
+                }
                 else if (message.StartsWith("EMOT:"))
                 {
                     string emotion = message.Substring(5);
@@ -1586,17 +1485,23 @@ public class TuioDemo : Form, TuioListener
                         user.Emot = emotion;
                     }
                 }
+
                 if (gestureTimer != null)
->>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
                 {
-                    Console.WriteLine($"Error reading message: {ex.Message}");
-                    break;
+                    gestureTimer.Stop();
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading message: {ex.Message}");
+                break;
+            }
         }
-
-        client.Close();
     }
+
+    client.Close();
+}
+
     public static async Task StartServer()
     {
         TcpListener server = new TcpListener(IPAddress.Any, 12345);
