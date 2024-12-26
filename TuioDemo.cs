@@ -35,6 +35,9 @@ using System.Drawing.Drawing2D;
 using System.IO;
 using System.Timers;
 using System.Text.Json;
+using System.Reflection.Emit;
+using System.Text.Json.Serialization;
+
 
 public class User
 {
@@ -84,13 +87,16 @@ public class TuioDemo : Form, TuioListener
     private bool fullscreen;
     private bool verbose;
     private static List<string> gesture = new List<string>();
-    private static int screen = 5;
+    private static int screen = 6;
     private static int QuestionNumber = 0;
     private string responseMessage = "";
     private int score = 0;
     private Dictionary<string, int> studentScores = new Dictionary<string, int>();
     private int currentStudent = 0;
     private bool hasNavigated = false;
+    private static string laserCoordinates = "";
+    private static volatile int laser_X = 0;
+    private static volatile int laser_Y = 0;
 
     private static List<Question> easyQuestions = new List<Question>();
     private static List<Question> mediumQuestions = new List<Question>();
@@ -366,11 +372,85 @@ public class TuioDemo : Form, TuioListener
                 studentRegister();
                 break;
             case 6:
-                // chooseDevice(g);
+                drawLaserScreen(pevent);
+
                 break;
         }
 
     }
+
+    private void drawLaserScreen(PaintEventArgs pevent)
+    {
+        Graphics g = pevent.Graphics;
+
+        // Set a light, child-friendly background color
+        g.Clear(Color.LightCyan);
+
+        // Load the images for the boxes and laser
+        Image boxImage1 = Image.FromFile("hom2.jpg");  // Replace with the path to your first box image
+        Image boxImage2 = Image.FromFile("farm.jpg");  // Replace with the path to your second box image
+        Image laserImage = Image.FromFile("chicken.png");  // Replace with the path to your laser image
+
+        // Define padding and border width
+        int padding = 30;
+        int borderWidth = 6;
+
+        // Define the box sizes (you can adjust these based on your images)
+        int boxWidth = 280;
+        int boxHeight = 250;
+
+        // Define positions for the two boxes with padding and borders
+        Rectangle box1Rect = new Rectangle(padding, padding + 60, boxWidth, boxHeight);  // Added space for text above box
+        Rectangle box2Rect = new Rectangle(this.ClientSize.Width - boxWidth - padding, padding + 60, boxWidth, boxHeight);  // Added space for text above box
+
+        // Draw the borders around the boxes with soft contrasting colors
+        using (Pen borderPen1 = new Pen(Color.Pink, borderWidth))
+        using (Pen borderPen2 = new Pen(Color.Yellow, borderWidth))
+        {
+            g.DrawRectangle(borderPen1, box1Rect); // Pink border for the left box
+            g.DrawRectangle(borderPen2, box2Rect); // Yellow border for the right box
+        }
+
+        // Draw the images inside the boxes with padding
+        g.DrawImage(boxImage1, box1Rect.X + borderWidth, box1Rect.Y + borderWidth, box1Rect.Width - 2 * borderWidth, box1Rect.Height - 2 * borderWidth);
+        g.DrawImage(boxImage2, box2Rect.X + borderWidth, box2Rect.Y + borderWidth, box2Rect.Width - 2 * borderWidth, box2Rect.Height - 2 * borderWidth);
+
+        // Set up the font and color for the text (larger, centered, and child-friendly)
+        using (Font font = new Font("Comic Sans MS", 24, FontStyle.Bold))
+        using (Brush textBrush1 = new SolidBrush(Color.HotPink))  // Text color for "Home"
+        using (Brush textBrush2 = new SolidBrush(Color.Orange))   // Text color for "Farm"
+        {
+            // Draw "Home" above the left box (centered)
+            string homeText = "Home";
+            SizeF homeTextSize = g.MeasureString(homeText, font);
+            float homeTextX = (box1Rect.X + box1Rect.Width / 2) - homeTextSize.Width / 2;
+            g.DrawString(homeText, font, textBrush1, homeTextX, padding);
+
+            // Draw "Farm" above the right box (centered)
+            string farmText = "Farm";
+            SizeF farmTextSize = g.MeasureString(farmText, font);
+            float farmTextX = (box2Rect.X + box2Rect.Width / 2) - farmTextSize.Width / 2;
+            g.DrawString(farmText, font, textBrush2, farmTextX, padding);
+        }
+
+        // Define the position and size for the laser image
+        int laserRadius = 70;  // Optional if you want to define a size for the laser image
+                               // Draw the laser image at (laser_X, laser_Y)
+        g.DrawImage(laserImage, laser_X - laserRadius / 2, laser_Y - laserRadius / 2, laserRadius, laserRadius);
+
+        // Draw the coordinates on the screen for debugging
+        //using (Font font = new Font("Arial", 12))
+        //{
+        //    g.DrawString($"Laser X: {laser_X} Y: {laser_Y}", font, Brushes.White, 10, 300);
+        //}
+
+        // Invalidate to trigger a repaint (optional)
+        this.Invalidate();
+    }
+
+
+
+
     private void drawWelcomeBackground(Graphics g, PaintEventArgs pevent, string welcomeText)
     {
         int width = this.ClientSize.Width;
@@ -487,6 +567,7 @@ public class TuioDemo : Form, TuioListener
     private string currentMenu = "Main"; // Tracks the current menu
     private string selectedCategory = ""; // Tracks the selected category
     private string selectedSubmenu = "";
+
     private Dictionary<string, List<string>> subMenus = new Dictionary<string, List<string>>
     {
         { "Math", new List<string> { "Algebra", "Geometry", "Calculus" } },
@@ -498,9 +579,31 @@ public class TuioDemo : Form, TuioListener
     };
     private Dictionary<string, List<string>> learningTopics = new Dictionary<string, List<string>>
     {
-        { "Biology", new List<string> { "Chicken", "Cow", "Eagle", "Shark" } },
+        { "Algebra", new List<string> { "Linear Equations", "Polynomials", "Quadratic Functions" } },
+        { "Geometry", new List<string> { "Euclidean Geometry", "Circles and Angles", "Coordinate Geometry" } },
+        { "Calculus", new List<string> { "Limits", "Derivatives", "Integrals" } },
+
+        { "Biology", new List<string> { "Cell Biology", "Genetics", "Ecology", "Evolution" } },
         { "Physics", new List<string> { "Newton's Laws", "Thermodynamics", "Quantum Mechanics" } },
-        { "Algebra", new List<string> { "Linear Equations", "Quadratic Functions", "Polynomials" } }
+        { "Chemistry", new List<string> { "Atomic Structure", "Chemical Reactions", "Organic Chemistry" } },
+
+        { "Ancient", new List<string> { "Ancient Egypt", "Ancient Greece", "Ancient Rome" } },
+        { "Medieval", new List<string> { "Feudalism", "The Crusades", "The Black Plague" } },
+        { "Modern", new List<string> { "Industrial Revolution", "World Wars", "Cold War" } },
+
+        { "Painting", new List<string> { "Impressionism", "Cubism", "Surrealism" } },
+        { "Sculpture", new List<string> { "Classical Sculpture", "Modern Sculpture", "Sculpture Materials" } },
+        { "Music", new List<string> { "Classical Music", "Jazz", "Electronic Music" } },
+
+        { "Behavioral", new List<string> { "Conditioning", "Motivation", "Social Behavior" } },
+        { "Cognitive", new List<string> { "Memory", "Perception", "Decision Making" } },
+        { "Developmental", new List<string> { "Child Development", "Adolescence", "Aging and Cognitive Decline" } },
+
+        { "Programming", new List<string> { "Introduction to Programming", "Object-Oriented Programming", "Error Handling" } },
+        { "Data Structures", new List<string> { "Arrays", "Linked Lists", "Stacks and Queues" } },
+        { "AI", new List<string> { "Machine Learning", "Natural Language Processing", "Computer Vision" } },
+
+
     };
 
 
@@ -508,10 +611,91 @@ public class TuioDemo : Form, TuioListener
     private string selectedDetail = ""; // Selected detail about the topic
     private Dictionary<string, (string ImagePath, List<string> Details)> topicDetails = new Dictionary<string, (string, List<string>)>
     {
-        { "Chicken", ("chicken.jpg", new List<string> { "Sound", "Origin", "Diet", "Lifespan" }) },
+        { "Chicken", ("chicken.jpg", new List<string> { "Habitat", "Weight", "Diet", "Lifespan" }) },
         { "Elephant", ("elephant.jpg", new List<string> { "Habitat", "Weight", "Diet", "Lifespan" }) },
-        { "Penguin", ("penguin.jpg", new List<string> { "Habitat", "Swimming Speed", "Diet", "Lifespan" }) }
+        { "Penguin", ("penguin.jpg", new List<string> { "Habitat", "Weight", "Diet", "Lifespan" }) }
     };
+
+    private Dictionary<string, List<string>> subMenusKids = new Dictionary<string, List<string>>
+    {
+        { "Math", new List<string> { "Counting", "Shapes", "Basic Addition and Subtraction" } },
+        { "Science", new List<string> { "Animals", "Plants", "The Weather" } },
+        { "History", new List<string> { "Dinosaurs", "Ancient Egypt", "Famous People" } },
+        { "Art", new List<string> { "Drawing", "Coloring", "Making Crafts" } },
+        { "Psychology", new List<string> { "Feelings", "Friendship", "Sharing" } },
+    };
+
+    private Dictionary<string, List<string>> learningTopicsKids = new Dictionary<string, List<string>>
+    {
+        { "Counting", new List<string> { "1 to 10", "Skip Counting", "Counting by 5s and 10s" } },
+        { "Shapes", new List<string> { "Circles", "Squares", "Triangles" } },
+        { "Basic Addition and Subtraction", new List<string> { "Adding Small Numbers", "Subtracting Small Numbers", "Math with Objects" } },//hand gestures
+
+        { "Animals", new List<string> { "chicken", "elephant", "penguin" } },
+        { "Plants", new List<string> { "flower", "tree", "grass" } },
+        { "The Weather", new List<string> { "Sunny Days", "Rain and Snow", "Clouds and Storms" } },
+
+        { "Dinosaurs", new List<string> { "T-Rex", "Triceratops", "" } },
+        { "Ancient Egypt", new List<string> { "Pyramids of Giza", "Temple of Karnak", "The Sphinx" } },
+        { "Famous People", new List<string> { "Albert Einstein", "Marie Curie", "Neil Armstrong" } },
+
+        { "Drawing", new List<string> { "How to Draw Animals", "Drawing Your Family", "Drawing with Colors" } },//bad
+        { "Coloring", new List<string> { "red", "yellow", "green" } },
+        { "Making Crafts", new List<string> { "Paper Crafts", "Clay Models", "Simple DIY Projects" } },//bad
+
+        { "Feelings", new List<string> { "Happy", "Sad", "frightened" } },
+        { "Friendship", new List<string> { "friend", "college", "bestfriend" } },
+        { "Sharing", new List<string> { "family", "friends", "strangers" } },
+
+    };
+
+    private Dictionary<string, (string ImagePath, List<string> Details)> topicDetailsKids = new Dictionary<string, (string, List<string>)>
+    {
+        { "Chicken", ("chicken.jpg", new List<string> { "Habitat: Farm", "Weight: 2-3 kg", "Diet: Seeds, grains, insects" }) },
+        { "Elephant", ("elephant.jpg", new List<string> { "Habitat: nature", "Weight: 6000-7000 kg", "Diet: Grass, fruits, bark" }) },
+        { "Penguin", ("penguin.jpg", new List<string> { "Habitat: nature", "Weight: 1-40 kg", "Diet: Fish, krill" }) },
+
+        { "Circles", ("Circles.jpg", new List<string> { "number of angles: 0" }) },
+        { "Squares", ("Squares.jpg", new List<string> { "number of angles: 4" }) },
+        { "Triangle", ("Triangle.jpg", new List<string> { "number of angles: 3" }) },
+
+        { "sunny day", ("sunny.jpg", new List<string> { "sound: Birds chirping", "season: Summer", "what to do: Play outside, wear sunglasses" }) },
+        { "rain and snow", ("rain.jpg", new List<string> { "sound: Raindrops, snowflakes", "season: Winter, Spring", "what to do: Stay inside, play in the snow" }) },
+        { "clouds and storms", ("storm.jpg", new List<string> { "sound: Thunder, rain", "season: Summer", "what to do: Stay indoors, watch the storm" }) },
+
+        { "flower", ("flower.jpg", new List<string> { "action: Blooms in spring", "size: Varies", "color: Red, yellow, pink, etc." }) },
+        { "tree", ("tree.jpg", new List<string> { "action: Provides shade, oxygen", "size: Varies, can grow very tall", "color: Green leaves, brown trunk" }) },
+        { "grass", ("grass.jpg", new List<string> { "action: Grows in fields", "size: Short, up to a foot tall", "color: Green" }) },
+
+        { "T-Rex", ("T_Rex.jpg", new List<string> { "Habitat: Forests, plains", "Weight: 7-9 tons", "Diet: Carnivore", "Lifespan: 30 years" }) },
+        { "Triceratops", ("Triceratops.jpg", new List<string> { "Habitat: Forests", "Weight: 6-12 tons", "Diet: Herbivore", "Lifespan: 30-40 years" }) },
+        { "Velociraptor", ("Velociraptor.jpg", new List<string> { "Habitat: Deserts, forests", "Weight: 15-30 kg", "Diet: Carnivore", "Lifespan: 10-15 years" }) },
+
+        { "Pyramids of Giza", ("pyramids_giza.jpg", new List<string> { "Date Built: 2580-2560 BC", "Size: 481 feet tall", "King: Pharaoh Khufu" }) },
+        { "Temple of Karnak", ("temple_karnak.jpg", new List<string> { "Date Built: 2000 BC", "Size: 100 feet tall", "King: Pharaoh Ramses II" }) },
+        { "The Sphinx", ("sphinx.jpg", new List<string> { "Date Built: 2500 BC", "Size: 66 feet tall", "King: Pharaoh Khafre" }) },
+
+        { "Albert Einstein", ("Albert.jpg", new List<string> { "birthyear: 1879", "gender: Male", "story: Developed theory of relativity", "country: Germany" }) },
+        { "Marie Curie", ("Marie.jpg", new List<string> { "birthyear: 1867", "gender: Female", "story: Pioneered research on radioactivity", "country: Poland" }) },
+        { "Neil Armstrong", ("Neil.jpg", new List<string> { "birthyear: 1930", "gender: Male", "story: First person to walk on the moon", "country: USA" }) },
+
+        { "red", ("red.jpg", new List<string> { "fruit: Apples, strawberries", "flower: Roses, poppies", "object: Firetrucks, stop signs" }) },
+        { "yellow", ("yellow.jpg", new List<string> { "fruit: Bananas, lemons", "flower: Sunflowers, daisies", "object: School buses, sun" }) },
+        { "green", ("green.jpg", new List<string> { "fruit: Apples, grapes", "flower: Tulips, lilies", "object: Grass, leaves" }) },
+
+        { "Happy", ("happy.jpg", new List<string> { "why: When you achieve something or feel loved", "what to do: Smile, play, enjoy", "what makes you happy: Friends, good weather" }) },
+        { "Sad", ("sad.jpg", new List<string> { "why: When something disappointing happens", "what to do: Talk to someone, relax", "what makes you feel better: Music, time with friends" }) },
+        { "frightened", ("frightened.jpg", new List<string> { "why: When you are scared or worried", "what to do: Stay close to a trusted person, breathe", "how to feel safe: In a well-lit room, with friends" }) },
+
+        { "friend", ("friend.jpg", new List<string> { "Habitat: Anywhere", "Weight: Varies", "Diet: Varies", "Lifespan: Varies" }) },
+        { "college", ("college.jpg", new List<string> { "Habitat: School", "Weight: N/A", "Diet: N/A", "Lifespan: 4 years on average" }) },
+        { "bestfriend", ("bestfriend.jpg", new List<string> { "Habitat: Anywhere", "Weight: Varies", "Diet: Varies", "Lifespan: Varies" }) },
+
+        { "family", ("family.jpg", new List<string> { "secrets: Share and protect each other", "friendly: Love and support", "ignore: Ignore conflicts, not each other" }) },
+        { "friends", ("friends.jpg", new List<string> { "secrets: Trust and share", "friendly: Support and have fun", "ignore: Ignore disagreements" }) },
+        { "strangers", ("strangers.jpg", new List<string> { "secrets: No secrets yet", "friendly: Be polite", "ignore: Don't ignore, be cautious" }) },
+    };
+
 
     private bool canNavigate = true;
     private DateTime lastNavigationTime;
@@ -937,7 +1121,6 @@ public class TuioDemo : Form, TuioListener
             User temp = new User(users.Count + 1, "Student" + (users.Count + 1), "", marker.SymbolID, true) { Attended = true };
             users.Add(temp);
             currentStudent = users.Count - 1;
-            screen = 6;
 
         }
         else if (marker != null)
@@ -1196,63 +1379,104 @@ public class TuioDemo : Form, TuioListener
     }
     private static async Task ProcessClientAsync(TcpClient client)
     {
+
         using (NetworkStream stream = client.GetStream())
         {
             while (client.Connected)  // Continuous loop for real-time handling
             {
+                try
+                {
 
-                string message = await ReadMessageAsync(stream);
-                Debug.WriteLine(message);
-                if (message == null)
-                {
-                    Console.WriteLine("Client disconnected.");
-                    break;
-                }
+                    string message = await ReadMessageAsync(stream);
 
-                if (message.StartsWith("ID:"))
-                {
-                    int id = int.Parse(message.Substring(3));
-                    // Debug.WriteLine("ID: " + id);
-                    loggedInUser = id;
-                }
-                else if (message.StartsWith("BT:"))
-                {
-                    string device = message.Substring(21);
-                    if (!bluetoothDevices.Contains(device))
+                    if (message == null)
                     {
-                        bluetoothDevices.Add(device);
-                        //Debug.WriteLine("Bluetooth Device " + bluetoothDevices.Count + ": " + device);
+                        Console.WriteLine("Client disconnected.");
+                        break;
                     }
-                }
-                else if (message.StartsWith("DE:"))
-                {
-                    string objectDetection = message.Substring(3);
-                    Debug.WriteLine("Object Detection: " + objectDetection);
-                    currentObject= objectDetection;
-                }
-                else if(message.StartsWith("GEST:"))
-                {
-                    string gesture = message.Substring(5);
-                    if (screen == 1)
+
+                    Debug.WriteLine("CONNECTEDD.........");
+                    Debug.WriteLine(message);
+                    if (message.StartsWith("ID:"))
                     {
-                        if (gesture == "next")
+
+                        int id = int.Parse(message.Substring(3));
+                        // Debug.WriteLine("ID: " + id);
+                        loggedInUser = id;
+                    }
+                    else if (message.StartsWith("BT:"))
+                    {
+                        string device = message.Substring(21);
+                        if (!bluetoothDevices.Contains(device))
                         {
-                            QuestionNumber += 1;
-                            if (QuestionNumber > easyQuestions.Count)
-                                QuestionNumber = 0;
+                            bluetoothDevices.Add(device);
+                            //Debug.WriteLine("Bluetooth Device " + bluetoothDevices.Count + ": " + device);
                         }
                     }
+                    else if (message.StartsWith("DE:"))
+                    {
+                        string objectDetection = message.Substring(3);
+                        Debug.WriteLine("Object Detection: " + objectDetection);
+                        currentObject = objectDetection;
+                    }
+                    else if (message.StartsWith("GEST:"))
+                    {
+                        string gesture = message.Substring(5);
+                        if (screen == 1)
+                        {
+                            if (gesture == "next")
+                            {
+                                QuestionNumber += 1;
+                                if (QuestionNumber > easyQuestions.Count)
+                                    QuestionNumber = 0;
+                            }
+                        }
+                    }
+                    else if (message.StartsWith("LAS:"))
+                    {
+                        Debug.WriteLine("In LAS");
+                        string laser = message.Substring(4);
+                        if (screen == 6 && laser != "none")
+                        {
+                            laser = laser.Replace("'", "\"");
+
+                            // Find the start and end of the "x" and "y" values in the string
+                            int xStartIndex = laser.IndexOf("\"x\":") + 5;  // Find the index where x value starts
+                            int xEndIndex = laser.IndexOf(",", xStartIndex);  // Find the end of x value
+                            int yStartIndex = laser.IndexOf("\"y\":") + 5;  // Find the index where y value starts
+                            int yEndIndex = laser.IndexOf("}", yStartIndex);  // Find the end of y value
+
+                            // Extract the x and y values as strings
+                            string xValueString = laser.Substring(xStartIndex, xEndIndex - xStartIndex).Trim();
+                            string yValueString = laser.Substring(yStartIndex, yEndIndex - yStartIndex).Trim();
+
+                            // Convert the extracted string values to integers
+                            laser_X = int.Parse(xValueString);
+                            laser_Y = int.Parse(yValueString);
+
+                            Debug.WriteLine(laser);
+
+                            Debug.WriteLine("Laser Coordinates: " + laser);
+
+                        }
+
+                    }
+                    if (gestureTimer != null)
+                    {
+                        gestureTimer.Stop();
+                    }
+                    if (message.StartsWith("URE:"))
+                    {
+                        string device = message.Substring(4);
+                        gesture.Add(device);
+                        StartGestureListener();
+                        Debug.WriteLine("gesture is " + gesture.Count + ": " + device);
+                    }
                 }
-                if (gestureTimer != null)
+                catch (Exception ex)
                 {
-                    gestureTimer.Stop();
-                }
-                if (message.StartsWith("URE:"))
-                {
-                    string device = message.Substring(4);
-                    gesture.Add(device);
-                    StartGestureListener();
-                    Debug.WriteLine("gesture is " + gesture.Count + ": " + device);
+                    Console.WriteLine($"Error reading message: {ex.Message}");
+                    break;
                 }
             }
         }

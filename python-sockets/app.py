@@ -3,7 +3,7 @@ import time
 import struct
 import threading
 import queue
-import bluetooth
+#import bluetooth
 import subprocess
 import os
 from ultralytics import YOLO
@@ -16,6 +16,7 @@ import cv2
 from queue import Empty, Queue
 import Face_Recognition
 import Emotion_Recognition
+import numpy as np
 from live_ges import Recognizer, Point, next, previous
 
 class SharedCamera:
@@ -63,23 +64,23 @@ class SharedCamera:
         cv2.destroyAllWindows()
 
 # BluetoothScanner: Handles Bluetooth scanning in a separate thread
-class BluetoothScanner:
-    def __init__(self, data_queue):
-        self.data_queue = data_queue
+# class BluetoothScanner:
+#     def __init__(self, data_queue):
+#         self.data_queue = data_queue
+ 
+#     def start(self):
+#         threading.Thread(target=self.scan).start()
 
-    def start(self):
-        threading.Thread(target=self.scan).start()
-
-    def scan(self):
-        print("Starting continuous Bluetooth scan...")
-        while True:
-            try:
-                nearby_devices = bluetooth.discover_devices(lookup_names=True)
-                self.data_queue.put(nearby_devices)
-                time.sleep(1)
-            except Exception as e:
-                print(f"Bluetooth scan error: {e}")
-                time.sleep(1)
+#     def scan(self):
+#         print("Starting continuous Bluetooth scan...")
+#         while True:
+#             try:
+#                 nearby_devices = bluetooth.discover_devices(lookup_names=True)
+#                 self.data_queue.put(nearby_devices)
+#                 time.sleep(1)
+#             except Exception as e:
+#                 print(f"Bluetooth scan error: {e}")
+#                 time.sleep(1)
 
 
 # CommunicationHandler: Handles socket communication and data sending
@@ -89,23 +90,30 @@ class CommunicationHandler:
 
     def send_message(self, connection, message):
         try:
+            print(f"Attempting to send message: {message}")
             message_bytes = message.encode("utf-8")
             message_length = struct.pack(">I", len(message_bytes))
             connection.sendall(message_length + message_bytes)
             connection.recv(1)  # Wait for acknowledgment
+            print("Message sent successfully.")
         except Exception as e:
             print(f"Error sending message: {e}")
 
-    def send_data(self, connection, user_id, bluetooth_devices, detection_results, gesture_data='', emotion_data=''):
-        self.send_message(connection, f"ID:{user_id}")
+    def send_data(self, connection, user_id, detection_results,bluetooth_devices='',  gesture_data='', emotion_data='', laser_data=''):
+        print("Sending data...")
+        self.send_message(connection, f"ID:{1}")
         for result in detection_results:
             self.send_message(connection, f"DE:{result['class']}")
-        for addr, name in bluetooth_devices:
-            self.send_message(connection, f"BT:{addr},{name}")
+        #for addr, name in bluetooth_devices:
+            #self.send_message(connection, f"BT:{addr},{name}")
         if gesture_data:
             self.send_message(connection, f"GESTURE:{gesture_data}")
         if emotion_data:
             self.send_message(connection, f"EMOT:{emotion_data}")
+        if laser_data:
+            print("Sending laser data",laser_data)
+            self.send_message(connection, f"LAS:{laser_data}")
+
         print("Data sent successfully.")
 
 
@@ -301,7 +309,7 @@ class GestureDetectionHandler:
                         self.frame_count = 0
                         result = self.recognizer.recognize(self.all_points)
                         gesture_name, score = result
-                        print(f"Detected gesture: {gesture_name}, Score: {score:.2f}")
+                        #print(f"Detected gesture: {gesture_name}, Score: {score:.2f}")
                         self.all_points.clear()
 
                         if score > 0.3:
@@ -328,6 +336,57 @@ class ReactiVisionHandler:
             subprocess.Popen([self.executable_path])
         except Exception as e:
             print(f"Error starting reacTIVision: {e}")
+
+class LaserTrackingHandler:
+    def __init__(self, shared_camera, tracking_queue):
+        self.shared_camera = shared_camera
+        self.tracking_queue = tracking_queue
+
+    def start(self):
+        threading.Thread(target=self.run).start()
+
+    def run(self):
+        print("Starting laser tracking...")
+        frame_count = 0
+        while True:
+            frame = self.shared_camera.get_frame()
+            if frame is None:
+                continue
+            
+            frame_count += 1
+            if frame_count % 2 == 0:  # Add laser position to the queue every 10 frames
+                laser_position = self.detect_laser(frame)
+                if laser_position:
+                    MAX_QUEUE_SIZE = 100  # Set a limit for the queue size
+
+                    if self.tracking_queue.qsize() < MAX_QUEUE_SIZE:
+                        self.tracking_queue.put(laser_position)
+                    else:
+                        #print("Queue size exceeded. Discarding the oldest entry.")
+                        self.tracking_queue.get()  # Remove the oldest item to make room
+                        self.tracking_queue.put(laser_position)
+            #time.sleep(0.00001)  # Small delay to avoid excessive processing
+
+
+    def detect_laser(self, frame):
+        hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        lower_red = np.array([125, 50, 50])
+        upper_red = np.array([160, 255, 255])
+        mask = cv2.inRange(hsv_frame, lower_red, upper_red)
+        mask = cv2.erode(mask, None, iterations=2)
+        mask = cv2.dilate(mask, None, iterations=2)
+        contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        if contours:
+            largest_contour = max(contours, key=cv2.contourArea)
+            M = cv2.moments(largest_contour)
+            if M["m00"] > 0:
+                cx = int(M["m10"] / M["m00"])
+                cy = int(M["m01"] / M["m00"])
+                return {"x": cx, "y": cy}
+        return None
+
+
 
 
 # UserAuthentication: Handles user login using face recognition
@@ -401,14 +460,15 @@ class Application:
     def __init__(self):
         self.bluetooth_queue = Queue()
         self.detection_queue = Queue()
-        self.shared_camera = SharedCamera(camera_index=1)  
+        self.laser_tracking_queue = Queue()
+        self.shared_camera = SharedCamera(camera_index=0)  
         self.yolo_handler = YOLOHandler(self.shared_camera, self.detection_queue)
         self.comm_handler = CommunicationHandler()
         self.reactivision_handler = ReactiVisionHandler(
             executable_path="C:/Users/KamalM12/Vscode/Hci Project/reacTIVision-1.5.1-win64/reacTIVision.exe"
         )
         self.emotion_handler = EmotionDetectionHandler(self.shared_camera)
-
+        self.laser_handler = LaserTrackingHandler(self.shared_camera, self.laser_tracking_queue)
         self.face_recognition = FaceRecognition(self.shared_camera)
         self.logged_in_user_id = None
         self.users = [(1, "../bin/Debug/person.jpg")]
@@ -416,24 +476,24 @@ class Application:
 
         recognizer = Recognizer([next, previous])  # Replace with your gesture logic
         self.gesture_handler = GestureDetectionHandler(self.shared_camera, recognizer)
-
     def start(self):
-        print("Starting application...")
-        self.logged_in_user_id = self.face_recognition.login(self.users_img_encodings)
-        if not self.logged_in_user_id:
-            print("No user recognized. Exiting...")
-            return
+        #print("Starting application...")
+        #self.logged_in_user_id = self.face_recognition.login(self.users_img_encodings)
+        #if not self.logged_in_user_id:
+        #    print("No user recognized. Exiting...")
+        #    return
 
-        print(f"Logged in user ID: {self.logged_in_user_id}")
+        #print(f"Logged in user ID: {self.logged_in_user_id}")
 
         self.start_threads()
 
     def start_threads(self):
-        self.reactivision_handler.start()
-        BluetoothScanner(self.bluetooth_queue).start()
+        #self.reactivision_handler.start()
+       # BluetoothScanner(self.bluetooth_queue).start()
         self.yolo_handler.start()
         self.emotion_handler.start()
         self.gesture_handler.start()
+        self.laser_handler.start()
         threading.Thread(target=self.client_thread).start()
 
     def client_thread(self):
@@ -443,20 +503,23 @@ class Application:
                     client_socket.connect(self.comm_handler.server_address)
 
                     while True:
-                        bluetooth_devices = self.get_bluetooth_devices()
+                        bluetooth_devices = 'hi' #self.get_bluetooth_devices()
                         detection_results = self.get_detection_results()
                         gesture_data = self.gesture_handler.get_gestures()
                         emotion_data = self.emotion_handler.current_emotion
+                        Laser_data = self.get_laser_tracking_data() 
                         # Send data to client
+                        print(f"Laser position: {Laser_data}")
                         self.comm_handler.send_data(
                             client_socket,
                             self.logged_in_user_id,
-                            bluetooth_devices,
                             detection_results,
+                            bluetooth_devices=bluetooth_devices,
                             gesture_data=gesture_data,
-                            emotion_data=emotion_data
+                            emotion_data=emotion_data,
+                            laser_data=Laser_data
                         )
-
+                        
                         # if emotion_data:
                         #     self.comm_handler.send_message(client_socket, f"EMOT:{emotion_data}")
 
@@ -482,6 +545,21 @@ class Application:
     
     def stop(self):
         self.shared_camera.release()
+    
+    
+    def get_laser_tracking_data(self):
+        try:
+            print(f"Queue size before get: {self.laser_tracking_queue.qsize()}")
+            laser_data = self.laser_tracking_queue.get_nowait()
+            print(f"Retrieved laser data from queue: {laser_data}")
+            return laser_data
+        except Empty:
+            print("Laser tracking queue is empty.")
+            return "none"
+
+        
+        
+
 
 
 # Entry Point
