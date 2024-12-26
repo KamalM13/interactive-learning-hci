@@ -5,6 +5,22 @@
     {
       "AbsoluteMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|c:\\my stuff\\msa\\year4\\semster 1\\hci\\project\\interactive-learning-hci\\tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|solutionrelative:tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+<<<<<<< HEAD
+=======
+    },
+    {
+<<<<<<< HEAD
+      "AbsoluteMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|C:\\Users\\KamalM12\\Vscode\\Hci Project\\interactive-learning-hci\\TUIO\\TuioObject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|solutionrelative:TUIO\\TuioObject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+=======
+      "AbsoluteMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|C:\\Users\\KamalM12\\Vscode\\Hci Project\\interactive-learning-hci\\tuio\\tuioobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|solutionrelative:tuio\\tuioobject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+>>>>>>> parent of 95de54b (added object tracking)
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|C:\\Users\\KamalM12\\Vscode\\Hci Project\\interactive-learning-hci\\tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{83F18314-A320-4148-A5A5-D8FD091FC407}|TUIO_DEMO.csproj|solutionrelative:tuiodemo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+>>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
     }
   ],
   "DocumentGroupContainers": [
@@ -32,7 +48,15 @@
               "RelativeDocumentMoniker": "TuioDemo.cs",
               "ToolTip": "C:\\My Stuff\\MSA\\year4\\semster 1\\HCI\\project\\interactive-learning-hci\\TuioDemo.cs",
               "RelativeToolTip": "TuioDemo.cs",
+<<<<<<< HEAD
               "ViewState": "AgIAAI4CAAAAAAAAAAAuwJwCAAAAAAAAAAAAAA==",
+=======
+<<<<<<< HEAD
+              "ViewState": "AgIAAAYCAAAAAAAAAAAgwAICAABHAAAAAAAAAA==",
+=======
+              "ViewState": "AgIAALkEAAAAAAAAAAAswNAEAAA0AAAAAAAAAA==",
+>>>>>>> parent of 95de54b (added object tracking)
+>>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-12-25T19:36:47.883Z",
               "EditorCaption": ""

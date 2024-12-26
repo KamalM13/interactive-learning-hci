@@ -54,8 +54,10 @@ public class User
 
     public bool IsStudent { get; set; }
 
+    public string Emot { get; set; }
+
     // Constructor
-    public User(int studentId, string name, string bluetooth, int marker, bool isStudent)
+    public User(int studentId, string name, string bluetooth, int marker, bool isStudent, string emot)
     {
         StudentId = studentId;
         Name = name;
@@ -64,6 +66,7 @@ public class User
         Bluetooth = bluetooth;
         Marker = marker;
         IsStudent = isStudent;
+        Emot = emot;
     }
 }
 
@@ -87,8 +90,13 @@ public class TuioDemo : Form, TuioListener
     private bool fullscreen;
     private bool verbose;
     private static List<string> gesture = new List<string>();
+<<<<<<< HEAD
     private static int screen = 6;
     private static int QuestionNumber = 0;
+=======
+    private static int screen = 5;
+
+>>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
     private string responseMessage = "";
     private int score = 0;
     private Dictionary<string, int> studentScores = new Dictionary<string, int>();
@@ -131,11 +139,11 @@ public class TuioDemo : Form, TuioListener
     private Difficulty difficultyLevel;
     private Difficulty currentDifficulty = Difficulty.Easy; // Set default to Easy, or as needed
     private static List<string> bluetoothDevices = new List<string>();
-    private List<User> users = new List<User>
+    private static List<User> users = new List<User>
     {
-    new User(1, "Kamal Mohamed", "CC:F9:F0:CD:B9:DC",0, false) { Attended = false, Tscore = 0 },
-    new User(2, "Jane Smith", "", 0, true) { Attended = true, Tscore = 5 },
-    new User(3, "Alex Brown", "", 0, true) { Attended = false, Tscore = 0 }
+    new User(1, "Kamal Mohamed", "CC:F9:F0:CD:B9:DC",0, true, "") { Attended = false, Tscore = 0 },
+    new User(2, "Jane Smith", "", 0, true, "") { Attended = true, Tscore = 5 },
+    new User(3, "Alex Brown", "", 0, true, "") { Attended = false, Tscore = 0 }
     };
     private static int loggedInUser = 0;
     private static string currentObject = "";
@@ -369,7 +377,7 @@ public class TuioDemo : Form, TuioListener
                 drawWelcomeScreen(g, pevent);
                 if (loggedInUser != 0)
                     checkLogin(loggedInUser);
-                studentRegister();
+                //studentRegister();
                 break;
             case 6:
                 drawLaserScreen(pevent);
@@ -509,7 +517,7 @@ public class TuioDemo : Form, TuioListener
 
     private void drawWelcomeScreen(Graphics g, PaintEventArgs pevent)
     {
-        drawWelcomeBackground(g, pevent, "Student register with TUIO");
+        drawWelcomeBackground(g, pevent, "Student facial recognition login");
     }
 
     private void drawLearningScreen(Graphics g, PaintEventArgs pevent)
@@ -539,7 +547,7 @@ public class TuioDemo : Form, TuioListener
         g.FillRectangle(Brushes.DarkBlue, new Rectangle((int)(width / 2 - 250), 100, 550, 40));
         g.DrawString("Name", new Font("Arial", 16, FontStyle.Bold), Brushes.White, new PointF(width / 2 - 240, 110));
         g.DrawString("Score", new Font("Arial", 16, FontStyle.Bold), Brushes.White, new PointF(width / 2 - 70, 110));
-        g.DrawString("Device", new Font("Arial", 16, FontStyle.Bold), Brushes.White, new PointF(width / 2 + 60, 110));
+        g.DrawString("Emotion", new Font("Arial", 16, FontStyle.Bold), Brushes.White, new PointF(width / 2 + 60, 110));
         g.DrawString("Attended", new Font("Arial", 16, FontStyle.Bold), Brushes.White, new PointF(width / 2 + 180, 110));
 
         float startX = width / 2 - 250;
@@ -554,7 +562,8 @@ public class TuioDemo : Form, TuioListener
 
             g.DrawString(student.Name, new Font("Arial", 14), Brushes.Black, new PointF(startX + 10, startY + 5));
             g.DrawString(student.Tscore.ToString(), new Font("Arial", 14), Brushes.Black, new PointF(startX + 180, startY + 5));
-            g.DrawString(student.Bluetooth, new Font("Arial", 8), Brushes.Black, new PointF(startX + 300, startY + 5));
+            //g.DrawString(student.Bluetooth, new Font("Arial", 8), Brushes.Black, new PointF(startX + 300, startY + 5));
+            g.DrawString(student.Emot, new Font("Arial", 14), Brushes.Black, new PointF(startX + 300, startY + 5));
             g.DrawString(student.Attended ? "Yes" : "No", new Font("Arial", 14), Brushes.Black, new PointF(startX + 420, startY + 5));
 
             startY += rowHeight;
@@ -704,9 +713,10 @@ public class TuioDemo : Form, TuioListener
     {
         int numOptions = options.Count;
         float anglePerOption = 360f / numOptions;
-        double distanceThreshold = radius * 0.6;
+        double distanceThreshold = 0.25;
         string selectedOptionText = "None";
         var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4);
+        var marker5 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 5);
         var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 0);
 
         for (int i = 0; i < numOptions; i++)
@@ -739,28 +749,52 @@ public class TuioDemo : Form, TuioListener
             StringFormat sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
             g.DrawString(options[i], new Font("Arial", 10), Brushes.Black, new PointF(textX, textY), sf);
         }
-
-        if (marker1 != null && marker4 != null)
+        if (marker4 != null && marker5 != null)
+        {
+            screen = 1;
+        }
+        if (marker1 != null)
         {
             float markerScreenX = x + (float)(radius * Math.Cos(marker1.Angle));
             float markerScreenY = y + (float)(radius * Math.Sin(marker1.Angle));
             g.FillEllipse(Brushes.Red, markerScreenX - 5, markerScreenY - 5, 10, 10);
 
-            double distance = Math.Sqrt(Math.Pow(marker1.X - marker4.X, 2) + Math.Pow(marker1.Y - marker4.Y, 2));
-            if (distance <= distanceThreshold)
+            if (marker4 != null)
             {
-                g.DrawString($"Selected: {selectedOptionText}", new Font("Arial", 12), Brushes.Black, new PointF(x - 50, y + radius + 20));
+                double distanceToMarker4 = Math.Sqrt(Math.Pow(marker1.X - marker4.X, 2) + Math.Pow(marker1.Y - marker4.Y, 2));
 
-                // Cooldown logic for navigation
-                if (canNavigate)
+                if (distanceToMarker4 <= distanceThreshold)
                 {
-                    HandleNavigation(selectedOptionText);
+                    g.DrawString($"Selected: {selectedOptionText}", new Font("Arial", 12), Brushes.Black, new PointF(x - 50, y + radius + 20));
 
-                    canNavigate = false;
-                    lastNavigationTime = DateTime.Now;
+                    if (canNavigate)
+                    {
+                        HandleNavigation(selectedOptionText); // Handle Next navigation
+                        canNavigate = false;
+                        lastNavigationTime = DateTime.Now;
+                    }
                 }
             }
-            else
+
+            if (marker5 != null)
+            {
+                double distanceToMarker5 = Math.Sqrt(Math.Pow(marker1.X - marker5.X, 2) + Math.Pow(marker1.Y - marker5.Y, 2));
+
+                if (distanceToMarker5 <= distanceThreshold)
+                {
+                    g.DrawString($"Selected: Previous", new Font("Arial", 12), Brushes.Black, new PointF(x - 50, y + radius + 20));
+
+                    if (canNavigate)
+                    {
+                        HandleNavigation("Previous"); // Handle Previous navigation
+                        canNavigate = false;
+                        lastNavigationTime = DateTime.Now;
+                    }
+                }
+            }
+
+            if ((marker4 == null || Math.Sqrt(Math.Pow(marker1.X - marker4.X, 2) + Math.Pow(marker1.Y - marker4.Y, 2)) > distanceThreshold) &&
+                (marker5 == null || Math.Sqrt(Math.Pow(marker1.X - marker5.X, 2) + Math.Pow(marker1.Y - marker5.Y, 2)) > distanceThreshold))
             {
                 g.DrawString($"No valid selection", new Font("Arial", 12), Brushes.Black, new PointF(x - 50, y + radius + 20));
             }
@@ -793,13 +827,17 @@ public class TuioDemo : Form, TuioListener
         else if (currentMenu == "TopicDetails")
         {
             DrawTopicDetails(g);
-            return; // Exit early to avoid drawing other menus
+            return;
         }
         else
         {
-            options = new List<string>(); // Empty if no valid menu state
+            options = new List<string>();
         }
-
+        if(currentObject == "bottle")
+        {
+            currentMenu = "TopicDetails";
+            selectedTopic = "Chicken";
+        }
         DrawPieMenu(g, options, 200, 200, 150);
     }
 
@@ -822,28 +860,42 @@ public class TuioDemo : Form, TuioListener
             g.DrawString($"Detail: {selectedDetail}", new Font("Arial", 12), Brushes.Black, new PointF(50, 420));
         }
     }
+    private Stack<string> navigationHistory = new Stack<string>();
+
     private void HandleNavigation(string selectedOptionText)
     {
         if (currentMenu == "Learning" && selectedOptionText == "Chicken")
         {
+            navigationHistory.Push(currentMenu); // Save the current menu
             selectedTopic = selectedOptionText;
             currentMenu = "TopicDetails"; // Transition to topic details
         }
         else if (currentMenu == "TopicDetails" && topicDetails.ContainsKey(selectedTopic) && topicDetails[selectedTopic].Details.Contains(selectedOptionText))
         {
+
             selectedDetail = selectedOptionText; // Update the detail being displayed
         }
         else if (currentMenu == "Main" && subMenus.ContainsKey(selectedOptionText))
         {
+            navigationHistory.Push(currentMenu);
             selectedCategory = selectedOptionText;
             currentMenu = "Submenu";
         }
         else if (currentMenu == "Submenu" && learningTopics.ContainsKey(selectedOptionText))
         {
+            navigationHistory.Push(currentMenu);
             selectedSubmenu = selectedOptionText;
             currentMenu = "Learning";
         }
+        else if (selectedOptionText == "Previous") // Handle navigation backward
+        {
+            if (navigationHistory.Count > 0)
+            {
+                currentMenu = navigationHistory.Pop();
+            }
+        }
     }
+
 
     private void drawScreenFour(PaintEventArgs pevent,
     Graphics g,
@@ -971,7 +1023,7 @@ public class TuioDemo : Form, TuioListener
 
         Question question1 = GetCurrentQuestion();
         int ii = 0;
-        for (int i = QuestionNumber * 4; i < (QuestionNumber * 4) + 4; i++)
+        for (int i = 0; i < 4; i++)
         {
             int x = (i % 2 == 0) ? 0 : midWidth;
             int y = ((i % 4) < 2) ? 0 : midHeight;
@@ -1000,7 +1052,7 @@ public class TuioDemo : Form, TuioListener
             int x = 0;
             int y = 0;
 
-            int i = QuestionNumber * 4;
+            int i = 0;
             if (marker1.Angle >= 4.7 && marker1.Angle <= 6.5)
             {
                 x = (1 % 2 == 0) ? 0 : midWidth;
@@ -1072,16 +1124,10 @@ public class TuioDemo : Form, TuioListener
 
             if (distance < distanceThreshold && !hasNavigated)
             {
-                if (marker2.X > marker4.X)
-                {
-                    QuestionNumber = (QuestionNumber + 1) % questions.Count;
-                    screen = 1;
-                }
-                else if (marker2.X < marker4.X)
-                {
-                    QuestionNumber = (QuestionNumber - 1 + questions.Count) % questions.Count;
-                    screen = 1;
-                }
+                currentQuestionIndex += 1;
+                if (currentQuestionIndex > questions.Count)
+                    currentQuestionIndex = 0;
+                screen = 1;
                 hasNavigated = true;
             }
             else if (distance >= distanceThreshold)
@@ -1100,6 +1146,7 @@ public class TuioDemo : Form, TuioListener
         }
 
     }
+<<<<<<< HEAD
     private void studentRegister()
     {
         var marker = objectList.Values.FirstOrDefault();
@@ -1121,16 +1168,40 @@ public class TuioDemo : Form, TuioListener
             User temp = new User(users.Count + 1, "Student" + (users.Count + 1), "", marker.SymbolID, true) { Attended = true };
             users.Add(temp);
             currentStudent = users.Count - 1;
+=======
+    //private void studentRegister()
+    //{
+    //    var marker = objectList.Values.FirstOrDefault();
+    //    if (marker != null && marker.SymbolID != 4 && marker.SymbolID != 8 && marker.SymbolID != 10)
+    //    {
+    //        bool flag = false;
+    //        // check if any users has the current register marker
+    //        for (int i = 0; i < users.Count; i++)
+    //        {
+    //            if (users[i].Marker == marker.SymbolID)
+    //            {
+    //                users[i].Attended = true;
+    //                currentStudent = i;
+    //                screen = 3;
+    //                flag = true;
+    //            }
+    //        }
+    //        if (flag) return;
+    //        User temp = new User(users.Count + 1, "Student" + (users.Count + 1), "", marker.SymbolID, true) { Attended = true };
+    //        users.Add(temp);
+    //        currentStudent = users.Count - 1;
+    //        screen = 6;
+>>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
 
-        }
-        else if (marker != null)
-        {
-            if (marker.SymbolID == 10)
-            {
-                screen = 3;
-            }
-        }
-    }
+    //    }
+    //    else if (marker != null)
+    //    {
+    //        if (marker.SymbolID == 10)
+    //        {
+    //            screen = 3;
+    //        }
+    //    }
+    //}
     private int selectedDeviceIndex = 0;
     private void chooseDevice(Graphics g)
     {
@@ -1215,6 +1286,16 @@ public class TuioDemo : Form, TuioListener
 
         var marker1 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == users[currentStudent].Marker);
         var marker4 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 4); // Answer selection TUIO
+        var marker5 = objectList.Values.FirstOrDefault(obj => obj.SymbolID == 5); // Previous TUIO
+
+        if (marker4 != null && marker5 != null)
+        {
+            double distanceToMarker4_5 = Math.Sqrt(Math.Pow(marker4.X - marker5.X, 2) + Math.Pow(marker4.Y - marker5.Y, 2));
+            if (distanceToMarker4_5 < 0.15)
+            {
+                screen = 3;
+            }
+        }
 
         List<Question> questions = GetCurrentDifficulty();
 
@@ -1229,8 +1310,7 @@ public class TuioDemo : Form, TuioListener
                 screen = 2; // Move to the next screen
                 addScore(); // Increment the score
                 hasNavigated = true; // Prevent further triggers
-                                     // Handle difficulty-specific actions
-                HandleDifficulty();
+
             }
             else if (distance <= distanceThreshold && (marker1.Angle <= 5.23599 || marker1.Angle >= 6.10865) && !hasNavigated)
             {
@@ -1274,16 +1354,16 @@ public class TuioDemo : Form, TuioListener
             // Handle gesture for "next" (next question)
             if (gesture[gesture.Count - 1] == "next")
             {
-                QuestionNumber += 1;
-                if (QuestionNumber > questions.Count)
-                    QuestionNumber = 0;
+                currentQuestionIndex += 1;
+                if (currentQuestionIndex > questions.Count)
+                    currentQuestionIndex = 0;
             }
             // Handle gesture for "previous" (previous question)
             if (gesture[gesture.Count - 1] == "previous")
             {
-                QuestionNumber -= 1;
-                if (QuestionNumber < 0)
-                    QuestionNumber = questions.Count - 1;
+                currentQuestionIndex -= 1;
+                if (currentQuestionIndex < 0)
+                    currentQuestionIndex = questions.Count - 1;
             }
         }
     }
@@ -1394,10 +1474,25 @@ public class TuioDemo : Form, TuioListener
                         Console.WriteLine("Client disconnected.");
                         break;
                     }
+<<<<<<< HEAD
 
                     Debug.WriteLine("CONNECTEDD.........");
                     Debug.WriteLine(message);
                     if (message.StartsWith("ID:"))
+=======
+                }
+                else if (message.StartsWith("DE:"))
+                {
+                    string objectDetection = message.Substring(3);
+                    Debug.WriteLine("Object Detection: " + objectDetection);
+<<<<<<< HEAD
+                    currentObject= objectDetection;
+                }
+                else if (message.StartsWith("GEST:"))
+                {
+                    string gesture = message.Substring(5);
+                    if (screen == 1)
+>>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
                     {
 
                         int id = int.Parse(message.Substring(3));
@@ -1409,8 +1504,14 @@ public class TuioDemo : Form, TuioListener
                         string device = message.Substring(21);
                         if (!bluetoothDevices.Contains(device))
                         {
+<<<<<<< HEAD
                             bluetoothDevices.Add(device);
                             //Debug.WriteLine("Bluetooth Device " + bluetoothDevices.Count + ": " + device);
+=======
+                            currentQuestionIndex += 1;
+                            if (currentQuestionIndex > easyQuestions.Count)
+                                currentQuestionIndex = 0;
+>>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
                         }
                     }
                     else if (message.StartsWith("DE:"))
@@ -1473,7 +1574,20 @@ public class TuioDemo : Form, TuioListener
                         Debug.WriteLine("gesture is " + gesture.Count + ": " + device);
                     }
                 }
+<<<<<<< HEAD
                 catch (Exception ex)
+=======
+                else if (message.StartsWith("EMOT:"))
+                {
+                    string emotion = message.Substring(5);
+                    var user = users.FirstOrDefault(u => u.StudentId == 1);
+                    if (user != null)
+                    {
+                        user.Emot = emotion;
+                    }
+                }
+                if (gestureTimer != null)
+>>>>>>> cf118155d17c519d91b521edf46d949931ea8ee9
                 {
                     Console.WriteLine($"Error reading message: {ex.Message}");
                     break;

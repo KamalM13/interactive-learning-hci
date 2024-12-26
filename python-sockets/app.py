@@ -18,14 +18,18 @@ import Face_Recognition
 import Emotion_Recognition
 import numpy as np
 from live_ges import Recognizer, Point, next, previous
+from gaze_tracking import GazeTracking
+import numpy as np
+import dlib
 
 class SharedCamera:
-    def __init__(self, camera_index=0):
+    def __init__(self, camera_index=1):
         self.camera_index = camera_index
         self.capture = cv2.VideoCapture(camera_index)
         self.frame = None
         self.lock = threading.Lock()
         self.running = True
+        self.gaze_point = None
 
         if not self.capture.isOpened():
             print("Error: Could not open the camera.")
@@ -47,16 +51,33 @@ class SharedCamera:
     def get_frame(self):
         with self.lock:
             return self.frame.copy() if self.frame is not None else None
+        
+    def set_gaze_point(self, point):
+        self.gaze_point = point
 
     def _show_camera(self):
         while self.running:
             frame = self.get_frame()
             if frame is not None:
-                cv2.imshow("Shared Camera Feed", frame)
+                # Resize the frame to fit the desired window size (1920x1080)
+                frame_resized = cv2.resize(frame, (640, 480))
+                
+                # Draw gaze point on the resized frame
+                if self.gaze_point is not None:
+                    x, y = self.gaze_point
+                    # Ensure the gaze point is within bounds
+                    x = min(x, 1920 - 1)
+                    y = min(y, 1080 - 1)
+                    cv2.circle(frame_resized, (x, y), 10, (0, 255, 0), -1)  # Draw a green circle
+
+                # Show the resized frame in the window
+                cv2.imshow("Shared Camera Feed", frame_resized)
+
             if cv2.waitKey(1) & 0xFF == ord('q'):  # Press 'q' to exit the feed
                 self.running = False
                 break
         self.release()
+
 
     def release(self):
         self.running = False
@@ -160,7 +181,7 @@ class YOLOHandler:
                     confidence = box.conf[0]
                     class_id = int(box.cls[0])
 
-                    if self.model.names[class_id] == "person" or confidence < 0.65:
+                    if self.model.names[class_id] == "person" or confidence < 0.75:
                         continue
 
                     detection_data = {"class": self.model.names[class_id]}
@@ -454,7 +475,81 @@ class FaceRecognition:
 
         return users_img_encodings
 
+class GazeHandler:
+    def __init__(self, shared_camera, screen_width=640, screen_height=480):
+        self.shared_camera = shared_camera
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+        self.gaze_points = []  # List to store gaze points
+        self.running = True
 
+        self.detector = dlib.get_frontal_face_detector()
+        self.predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+
+    def start(self):
+        threading.Thread(target=self.track_gaze).start()
+
+    def stop(self):
+        self.running = False
+
+    def track_gaze(self):
+        while self.running:
+            frame = self.shared_camera.get_frame()
+            if frame is None:
+                continue
+
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = self.detector(gray)
+
+            for face in faces:
+                landmarks = self.predictor(gray, face)
+                left_pupil = self.pupil_position(range(36, 42), landmarks, gray)
+                right_pupil = self.pupil_position(range(42, 48), landmarks, gray)
+
+                # Map gaze to screen space
+                screen_x = np.mean([left_pupil[0], right_pupil[0]]) / frame.shape[1] * self.screen_width
+                screen_y = np.mean([left_pupil[1], right_pupil[1]]) / frame.shape[0] * self.screen_height
+
+                self.gaze_points.append((int(screen_x), int(screen_y)))
+                print(f"Gaze point: ({screen_x}, {screen_y})")
+
+            # Save the heatmap periodically
+            self.save_gaze_heatmap()
+
+    def pupil_position(self, eye_points, facial_landmarks, gray):
+        eye_region = np.array([(facial_landmarks.part(point).x, facial_landmarks.part(point).y) for point in eye_points])
+        min_x = np.min(eye_region[:, 0])
+        max_x = np.max(eye_region[:, 0])
+        min_y = np.min(eye_region[:, 1])
+        max_y = np.max(eye_region[:, 1])
+
+        eye = gray[min_y:max_y, min_x:max_x]
+        _, threshold_eye = cv2.threshold(eye, 30, 255, cv2.THRESH_BINARY_INV)
+        contours, _ = cv2.findContours(threshold_eye, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        if contours and len(contours) > 0:
+            contour = max(contours, key=cv2.contourArea)
+            M = cv2.moments(contour)
+            if M['m00'] != 0:
+                cx = int(M['m10'] / M['m00'])
+                cy = int(M['m01'] / M['m00'])
+                return (min_x + cx, min_y + cy)
+        return (min_x + (max_x - min_x) // 2, min_y + (max_y - min_y) // 2)
+
+    def generate_heatmap(self):
+        heatmap = np.zeros((self.screen_height, self.screen_width), dtype=np.float32)
+        for (x, y) in self.gaze_points:
+            if 0 <= x < self.screen_width and 0 <= y < self.screen_height:
+                heatmap[y, x] += 1
+
+        heatmap = cv2.GaussianBlur(heatmap, (51, 51), 0)
+        heatmap_normalized = cv2.normalize(heatmap, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+        return heatmap_normalized
+
+    def save_gaze_heatmap(self):
+        heatmap = self.generate_heatmap()
+        heatmap_colored = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+        cv2.imwrite('heatmap.png', heatmap_colored)
+        print(f"Gaze heatmap saved to heatmap.png")
 # Application: Main application class
 class Application:
     def __init__(self):
@@ -468,32 +563,34 @@ class Application:
             executable_path="C:/Users/KamalM12/Vscode/Hci Project/reacTIVision-1.5.1-win64/reacTIVision.exe"
         )
         self.emotion_handler = EmotionDetectionHandler(self.shared_camera)
+        self.gaze_handler = GazeHandler(self.shared_camera)
         self.laser_handler = LaserTrackingHandler(self.shared_camera, self.laser_tracking_queue)
         self.face_recognition = FaceRecognition(self.shared_camera)
         self.logged_in_user_id = None
         self.users = [(1, "../bin/Debug/person.jpg")]
         self.users_img_encodings = FaceRecognition.create_image_encodings(self.users)
 
-        recognizer = Recognizer([next, previous])  # Replace with your gesture logic
+        recognizer = Recognizer([next, previous]) 
         self.gesture_handler = GestureDetectionHandler(self.shared_camera, recognizer)
     def start(self):
-        #print("Starting application...")
-        #self.logged_in_user_id = self.face_recognition.login(self.users_img_encodings)
-        #if not self.logged_in_user_id:
-        #    print("No user recognized. Exiting...")
-        #    return
+        print("Starting application...")
+        self.logged_in_user_id = self.face_recognition.login(self.users_img_encodings)
+        if not self.logged_in_user_id:
+            print("No user recognized. Exiting...")
+            return
 
-        #print(f"Logged in user ID: {self.logged_in_user_id}")
+        print(f"Logged in user ID: {self.logged_in_user_id}")
 
         self.start_threads()
 
     def start_threads(self):
-        #self.reactivision_handler.start()
-       # BluetoothScanner(self.bluetooth_queue).start()
+        self.reactivision_handler.start()
+        BluetoothScanner(self.bluetooth_queue).start()
         self.yolo_handler.start()
         self.emotion_handler.start()
         self.gesture_handler.start()
         self.laser_handler.start()
+        self.gaze_handler.start()
         threading.Thread(target=self.client_thread).start()
 
     def client_thread(self):
@@ -508,6 +605,7 @@ class Application:
                         gesture_data = self.gesture_handler.get_gestures()
                         emotion_data = self.emotion_handler.current_emotion
                         Laser_data = self.get_laser_tracking_data() 
+                        gaze_data = self.gaze_handler.gaze_data
                         # Send data to client
                         print(f"Laser position: {Laser_data}")
                         self.comm_handler.send_data(
@@ -524,6 +622,11 @@ class Application:
                         #     self.comm_handler.send_message(client_socket, f"EMOT:{emotion_data}")
 
                         time.sleep(0.5)
+                        # Display real-time heatmap
+                        frame = self.shared_camera.get_frame()
+                        if frame is not None:
+                            heatmap_frame = self.gaze_handler.overlay_heatmap(frame)
+                            cv2.imshow("Gaze Heatmap", heatmap_frame)
             except Exception as e:
                 print(f"Connection error: {e}")
                 time.sleep(2)
